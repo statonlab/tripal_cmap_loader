@@ -1,0 +1,9 @@
+name = Tripal Cmap loader
+description = Loads a cmap format file into chado.
+core = 7.x
+package = Tripal Extensions
+files[] = tripal_cmap_loader.module
+configuration = admin/tripal/extension/tripal_cmap_loader
+version=7.x-3.0
+dependencies[] = tripal
+

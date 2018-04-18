@@ -112,11 +112,48 @@ class CmapImporter extends TripalImporter {
 //    $query_re = $arguments['query_re'];
 //    $query_type = $arguments['query_type'];
 
-    $this->parse_cmap($analysis_id, $cmap_file);
+    $this->parse_cmap($analysis_id, $cmap_file, $map_type);
   }
 
-  private function parse_cmap($analysis_id, $file) {
+  private function parse_cmap($analysis_id, $file, $map_type) {
+    $lines = file($file, FILE_SKIP_EMPTY_LINES);
+
+    foreach ($lines as $line_num => $line) {
+
+      // split the line into it's columns
+      $cols = explode("\t", $line);
+      if (sizeof($cols) < 11) {
+        throw new Exception("Improper number of columns on line $line_num");
+      }
+      $map_acc = $cols[0];
+      $map_name = $cols[1];
+      $map_start = $cols[2];
+      $map_stop = $cols[3];
+      $feature_acc = $cols[4];
+      $feature_name = $cols[5];
+      $feature_aliases = $cols[6];
+      $feature_start = $cols[7];
+      $feature_stop = $cols[8];
+      $feature_type_acc = $cols[9];
+      $is_landmark = $cols[10];
+
+      if ($map_acc == 'map_acc'){
+        //skip header
+        continue;
+      }
+
+      $map = $this->get_map($map_acc, $map_type);
+
+    }
 
   }
 
+
+  private function get_map($map_acc, $map_type){
+    //get map feature if it already exists
+
+    //if it doesnt, insert and return it
+
+    db_insert();
+  }
 }
