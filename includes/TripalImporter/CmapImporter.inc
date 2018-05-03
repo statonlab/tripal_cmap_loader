@@ -112,11 +112,18 @@ class CmapImporter extends TripalImporter {
 //    $query_re = $arguments['query_re'];
 //    $query_type = $arguments['query_type'];
 
-    $this->parse_cmap($analysis_id, $cmap_file, $map_type);
+    $unit_type = 27; //CVTERM for the unit type.  IE centimorgans
+
+    $map_type_id = 100; //cvterm for the map type.  IE.... chromosome? Linkage group?  let's give this variable a better name.
+    $featuremap_id = $this->create_featuremap($unit_type);
+
+    $this->parse_cmap($analysis_id, $cmap_file, $featuremap_id, $map_type_id);
   }
 
-  private function parse_cmap($analysis_id, $file, $map_type) {
+  private function parse_cmap($analysis_id, $file, $featuremap_id, $map_type_id) {
+
     $lines = file($file, FILE_SKIP_EMPTY_LINES);
+    $prev_map_feature = null;
 
     foreach ($lines as $line_num => $line) {
 
@@ -125,8 +132,8 @@ class CmapImporter extends TripalImporter {
       if (sizeof($cols) < 11) {
         throw new Exception("Improper number of columns on line $line_num");
       }
-      $map_acc = $cols[0];
-      $map_name = $cols[1];
+      $map_acc = $cols[0]; //the uniquename feature for the map ie chromosome
+      $map_name = $cols[1]; //name for map feature
       $map_start = $cols[2];
       $map_stop = $cols[3];
       $feature_acc = $cols[4];
@@ -137,23 +144,51 @@ class CmapImporter extends TripalImporter {
       $feature_type_acc = $cols[9];
       $is_landmark = $cols[10];
 
-      if ($map_acc == 'map_acc'){
+      if ($map_acc == 'map_acc') {
         //skip header
         continue;
       }
 
-      $map = $this->get_map($map_acc, $map_type);
+      $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id);
+
+      $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases);
+
+      //insert into featurepos
+$this->insert_featurepos($featuremap_id, $feature_id, $map_feature_id);
+      //insert into featurerange
+
+
 
     }
 
   }
 
 
-  private function get_map($map_acc, $map_type){
-    //get map feature if it already exists
-
+  private function get_map_feature($map_acc, $map_name, $map_type_id) {
+    //get map feature if it already exists and return it
+      $query = db_select("chado.feature", 'F')
+      ->fields('F', ['feature_id'])
+      ->condition('unique_name', $map_acc);
     //if it doesnt, insert and return it
+    $map_feature_id = $query->execute()->fetchField();
 
-    db_insert();
+    if (!$map_feature_id){
+      $insert = db_insert('chado.feature', 'F');
+      $insert->fields([$organism_id,$map_name, $map_acc, NULL, NULL,NULL, $map_type_id, FALSE, FALSE]);
+$map_feature_id = $insert->execute();
+    }
+
+    return $map_feature_id;
   }
+
+  private function get_marker_feature($feature_acc, $feature_name, $feature_aliases) {
+    //get feature if it already exists and return it
+
+    // if it doesnt, insert and return it
+  }
+
+  private function create_featuremap($unit_type) {
+
+  }
+
 }
