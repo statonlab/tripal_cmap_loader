@@ -63,6 +63,30 @@ function tripal_cmap_loader_bundle_fields_info($entity_type, $bundle) {
     ];
   }
 
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+
+    // First add my term.
+    tripal_insert_cvterm([
+      'id' => 'data:1274',
+      'name' => 'Map',
+      'cv_name' => 'EDAM',
+      'definition' => 'A map of (typically one) DNA sequence annotated with positional or non-positional features.',
+    ]);
+
+    // Then describe the field defined by that term.
+    $field_name = 'data__map';
+    $field_type = 'data__map';
+    $fields[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   return $fields;
 }
 
@@ -124,5 +148,37 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       ],
     ];
   }
+
+
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+    $field_name = 'data__map';
+    $field_type = 'data__map';
+    $instances[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Map',
+      'description' => 'A map of (typically one) DNA sequence annotated with positional or non-positional features.',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => 'organism_featuremap',
+        'chado_column' => 'organism_featuremap_id',
+        'base_table' => 'organism',
+      ],
+      'widget' => [
+        'type' => 'data__map_widget',
+        'settings' => [],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'data__map_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
   return $instances;
 }
