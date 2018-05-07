@@ -60,6 +60,9 @@ function tripal_cmap_loader_bundle_fields_info($entity_type, $bundle) {
       'storage' => [
         'type' => 'field_sql_storage',
       ],
+      'settings' => [
+        'max_length' => 10485760
+      ]
     ];
   }
 
@@ -131,7 +134,6 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       'settings' => [
         'auto_attach' => FALSE,
         'text_processing' => 0,
-        'max_length' => 10485760,
       ],
       'widget' => [
         'type' => 'text_textfield',

@@ -31,7 +31,9 @@ class local__cmap_viewer extends TripalField {
   // The module that manages this field.
   // If no module manages the field (IE it's added via libraries)
   // set this to 'tripal_chado'
-  public static $module = 'tripal_cmap_loader';
+//  public static $module = 'tripal_cmap_loader';
+  public static $module = 'text';
+
 
   public static $default_settings = array(
     'storage' => 'tripal_no_storage',
