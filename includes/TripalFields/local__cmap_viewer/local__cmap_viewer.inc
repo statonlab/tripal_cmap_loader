@@ -23,7 +23,7 @@ class local__cmap_viewer extends TripalField {
   public static $default_description = 'A cmap visualization field.';
 
   // The default widget for this field.
-  public static $default_widget = 'local__cmap_viewer_widget';
+  public static $default_widget = 'text__text_field';
 
   // The default formatter for this field.
   public static $default_formatter = 'local__cmap_viewer_formatter';
@@ -109,7 +109,11 @@ class local__cmap_viewer extends TripalField {
     // additional data to be used in the display, you should add it here.
     parent::load($entity);
 
-    dpm($entity);
+    $field_name = $this->field['field_name'];
+
+    dpm($this->field);
+
+    $entity->{$field_name}['und'][0]['value'] = 'who knows';
 
   }
 

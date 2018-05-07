@@ -40,7 +40,7 @@ function tripal_cmap_loader_bundle_fields_info($entity_type, $bundle) {
   // Because we are expecting data housed in Chado we can use the 'data_table'
   // property of the bundle to determine if this bundle is really the one
   // we want the field to be associated with.
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'featuremap')) {
     // First add my term.
     tripal_insert_cvterm([
       'id' => 'local:cmap_viewer',
@@ -92,7 +92,7 @@ function tripal_cmap_loader_bundle_fields_info($entity_type, $bundle) {
  */
 function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
   $instances = [];
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
+  if (isset($bundle->data_table) AND ($bundle->data_table == 'featuremap')) {
     $field_name = 'local__cmap_viewer';
     $instances[$field_name] = [
       'field_name' => $field_name,
@@ -101,12 +101,19 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       'label' => 'cMap',
       'description' => 'A cmap visualization field.',
       'required' => FALSE,
+      'storage' => [
+        'type' => 'field_sql_storage',
+      ],
       'settings' => [
         'auto_attach' => FALSE,
+        'text_processing' => 0,
+        'max_length' => 10485760,
       ],
       'widget' => [
-        'type' => 'text',
-        'settings' => [],
+        'type' => 'text_textfield',
+        'required' => FALSE,
+        'settings' => [
+        ],
       ],
       'display' => [
         'default' => [
