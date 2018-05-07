@@ -83,6 +83,8 @@ class local__cmap_viewer_formatter extends TripalFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
+    dpm("whats up");
+    dpm($items);
   }
 
   /**

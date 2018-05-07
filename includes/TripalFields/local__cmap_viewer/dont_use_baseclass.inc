@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -22,25 +23,22 @@ class local__cmap_viewer extends TripalField {
   // The default description for this field.
   public static $default_description = 'A cmap visualization field.';
 
-  // The default widget for this field.
-  public static $default_widget = 'text__text_field';
-
   // The default formatter for this field.
   public static $default_formatter = 'local__cmap_viewer_formatter';
 
   // The module that manages this field.
   // If no module manages the field (IE it's added via libraries)
   // set this to 'tripal_chado'
-//  public static $module = 'tripal_cmap_loader';
+  //  public static $module = 'tripal_cmap_loader';
   public static $module = 'text';
 
 
-  public static $default_settings = array(
-    'storage' => 'tripal_no_storage',
-     'searchable_keys' => array(),
-  );
+  public static $default_settings = [
+    'storage' => 'field_sql_storage',
+    'searchable_keys' => [],
+  ];
 
-  public static $default_instance_settings = array(
+  public static $default_instance_settings = [
     // The DATABASE name, as it appears in chado.db.  This also builds the link-out url.  In most cases this will simply be the CV name.  In some cases (EDAM) this will be the SUBONTOLOGY.
     'term_vocabulary' => 'local',
     // The name of the term.
@@ -56,13 +54,13 @@ class local__cmap_viewer extends TripalField {
     // should have auto_attach set to FALSE so tha their values can be
     // attached asynchronously.
     'auto_attach' => FALSE,
-     // Indicates the download formats for this field.  The list must be the
+    // Indicates the download formats for this field.  The list must be the
     // name of a child class of the TripalFieldDownloader.
-    'download_formatters' => array(
+    'download_formatters' => [
       'TripalTabDownloader',
       'TripalCSVDownloader',
-    ),
-  );
+    ],
+  ];
 
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -76,7 +74,7 @@ class local__cmap_viewer extends TripalField {
   // the user but otherwise provides no data.
   public static $no_data = TRUE;
 
- /**
+  /**
    * Loads the field values from the underlying data store.
    *
    * @param $entity
@@ -113,12 +111,9 @@ class local__cmap_viewer extends TripalField {
 
     $field_name = $this->field['field_name'];
 
-    dpm($this->field);
-
     $entity->{$field_name}['und'][0]['value'] = 'who knows';
 
   }
-
 
 
   /**
@@ -218,50 +213,51 @@ class local__cmap_viewer extends TripalField {
    * and infraspecific type. If the organism to which the field belong is
    * published then an entity ID is provided.  The following array describes
    * all of these.
+   *
    * @code
-    $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
-        'sortable' => TRUE,
-        'searchable' => TRUE,
-        'elements' => array(
-          'rdfs:label' => array(
-            'searchable' => TRUE,
-            'name' => 'scientific_name',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'TAXRANK:0000005' => array(
-            'searchable' => TRUE,
-            'name' => 'genus',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'TAXRANK:0000006' => array(
-            'searchable' => TRUE,
-            'name' => 'species',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'TAXRANK:0000045' => array(
-            'searchable' => TRUE,
-            'name' => 'infraspecies',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'local:infraspecific_type' => array(
-            'searchable' => TRUE,
-            'name' => 'infraspecific_type',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
-            'sortable' => TRUE,
-          ),
-          'entity' => array(
-            'searchable' => FALSE,
-          ),
-        ),
-      )
-    );
+   * $field_term = $this->getFieldTermID();
+   * return array(
+   * $field_term => array(
+   * 'operations' => array('eq', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * 'searchable' => TRUE,
+   * 'elements' => array(
+   * 'rdfs:label' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'scientific_name',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'TAXRANK:0000005' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'genus',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'TAXRANK:0000006' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'species',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'TAXRANK:0000045' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'infraspecies',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'local:infraspecific_type' => array(
+   * 'searchable' => TRUE,
+   * 'name' => 'infraspecific_type',
+   * 'operations' => array('eq', 'ne', 'contains', 'starts'),
+   * 'sortable' => TRUE,
+   * ),
+   * 'entity' => array(
+   * 'searchable' => FALSE,
+   * ),
+   * ),
+   * )
+   * );
    * @endcode
    *
    * If a field does not have a complex nested set of values, but simply returns
@@ -273,13 +269,13 @@ class local__cmap_viewer extends TripalField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'ne', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'ne', 'contains', 'starts'],
         'sortable' => TRUE,
         'searchable' => TRUE,
-      ),
-    );
+      ],
+    ];
   }
 
 }

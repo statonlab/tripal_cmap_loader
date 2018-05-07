@@ -51,18 +51,18 @@ function tripal_cmap_loader_bundle_fields_info($entity_type, $bundle) {
 
     // Then describe the field defined by that term.
     $field_name = 'local__cmap_viewer';
-    $field_type = 'local__cmap_viewer';
     $fields[$field_name] = [
       'field_name' => $field_name,
-      'type' => $field_type,
+      'type' => 'text',
       'cardinality' => 1,
       'locked' => FALSE,
+      'module' => 'text',
       'storage' => [
         'type' => 'field_sql_storage',
       ],
       'settings' => [
-        'max_length' => 10485760
-      ]
+        'max_length' => 10485760,
+      ],
     ];
   }
 
@@ -138,7 +138,9 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       'widget' => [
         'type' => 'text_textfield',
         'required' => FALSE,
+        'label' => 'Test copied',
         'settings' => [
+          'size' => 64,
         ],
       ],
       'display' => [

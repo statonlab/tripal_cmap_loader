@@ -1,18 +1,36 @@
 <?php
 require_once "includes/tripal_cmap_loader.fields.inc";
-
-
-function tripal_cmap_loader_bundle_instances_info_alter(&$instances, $bundle, $term) {
-
-  if (isset($bundle->data_table) AND ($bundle->data_table == 'featuremap')) {
-
-    dpm($instances['local__cmap_viewer']);
-    $instances['local__cmap_viewer']['label'] = 'cMap flat file';
-    $instances['local__cmap_viewer']['required'] = FALSE;
-    $instances['local__cmap_viewer']['widget']['type'] = 'text_textfield';
-    $instances['local__cmap_viewer']['settings']['text_processing'] = '0';
-    $instances['local__cmap_viewer']['settings']['max_length'] = 200;
-
-    $instances['local__cmap_viewer']['weight'] = 0;
-  }
-}
+//
+//function tripal_cmap_loader_bundle_instances_info_alter(&$instances, $bundle, $term) {
+//  if (isset($bundle->data_table) AND ($bundle->data_table == 'featuremap')) {
+//
+//
+//    $instances['local__cmap_viewer']['required'] = TRUE;
+//    $instances['local__cmap_viewer']['widget']['type'] = 'text_textfield';
+//    $instances['local__cmap_viewer']['weight'] = 0;
+//
+//  }
+//
+////
+////  /**
+////   * @implements hook_bundle_fields_info_alter()
+////   *
+////   * @param $fields
+////   * @param $bundle
+////   * @param $term
+////   */
+////  function tripal_cmap_loader_bundle_fields_info_alter(&$fields, $bundle, $term) {
+////    if (isset($bundle->data_table) AND ($bundle->data_table == 'featuremap')) {
+////
+////      $fields['local__cmap_viewer']['storage']['type'] = 'field_sql_storage';
+////      $fields['local__cmap_viewer']['storage']['type'] = 'field_sql_storage';
+////
+////    //  $fields['local__cmap_viewer']['type'] = 'text_textfield';
+////    }
+////  }
+//
+//  function tripal_cmap_field_widget_info_alter(&$info) {
+//    dpm($info);
+////    $info['text_textarea']['field_types'][] = 'text';
+////    $info['string_textarea']['field_types'][] = 'string';
+//}
