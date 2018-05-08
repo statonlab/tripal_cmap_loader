@@ -2,3 +2,4 @@
 .env
 vendor/
 includes/js/cmap-js/*
+node_modules/
