@@ -81,6 +81,14 @@ class data__map_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+
+     $sql = db_select('chado . featuremap', 'FM');
+    $sql->fields('FM', ['featuremap_id', 'name', 'description']);
+    $sql->join('chado.featuremap_organism', 'CL', 'CL.featuremap_id = FM.featuremap_id');
+    $sql->fields('CL', ['featuremap_organism_id']);
+    $sql->condition('CL.' . 'organism_id', 2559);
+
+    $results = $sql->execute()->fetchAll();
     // Get the settings
     $settings = $display['settings'];
 
@@ -94,7 +102,7 @@ class data__map_formatter extends ChadoFieldFormatter {
       if (!isset($fmap["name"])){
         continue;
       }
-      $output = l("{$fmap["abbreviation"]} ({$fmap["common_name"]})", "bio_data/{$fmap["entity_id"]}");
+      $output = l("{$fmap["name"]}", "bio_data/{$fmap["entity_id"]}");
       $element[] = [
         '#type' => 'markup',
         '#markup' => $output

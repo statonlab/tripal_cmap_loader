@@ -74,9 +74,9 @@ class data__map extends ChadoField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // The table in Chado that the instance maps to.
-    'chado_table' => 'organism_featuremap',
+    'chado_table' => 'featuremap_organism',
     // The column of the table in Chado where the value of the field comes from.
-    'chado_column' => 'organism_featuremap_id',
+    'chado_column' => 'featuremap_organism_id',
     // The base table.
     'base_table' => 'featuremap',
     // Indicates the download formats for this field.  The list must be the
@@ -141,16 +141,17 @@ class data__map extends ChadoField {
     $pkey = $schema['primary key'][0];
 
     $linker = 'chado.featuremap_' . $base_table;
-    $linker_key = $base_table . '_featuremap_id';
+    $linker_key ='featuremap_' . $base_table . '_id';
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     $record_id = $entity_record->$key;
-    $sql = db_select('chado . feature_map', 'FM');
+
+    $sql = db_select('chado . featuremap', 'FM');
     $sql->fields('FM', ['featuremap_id', 'name', 'description']);
-    $sql->join($linker, 'CL', 'CL.featuremap_id = CO.featuremap_id');
-    $sql->fields('CL', [$linker_key]);
-    $sql->condition('CL.' . $field_column, $record_id);
+    $sql->join($linker, 'CL', 'CL.featuremap_id = FM.featuremap_id');
+    $sql->fields('CL', [$linker_key]); //we want the linker key ie featuremap_organism
+    $sql->condition('CL.' . $key, $record_id); //where organism_id = this entity
 
     $results = $sql->execute()->fetchAll();
 
@@ -161,7 +162,7 @@ class data__map extends ChadoField {
       $fm_description = $result->description;
       $fm_record_id = $result->featuremap_id;
 
-      $fm_entity_id = chado_get_record_entity_by_table("feature_map", $fm_record_id);
+      $fm_entity_id = chado_get_record_entity_by_table("featuremap", $fm_record_id);
 
       $entity->{$field_name}['und'][$i] = [
         'value' =>
@@ -170,7 +171,6 @@ class data__map extends ChadoField {
             'description' => $fm_description,
             'entity_id' => $fm_entity_id,
           ],
-        //'chado-' . $field_table . '__' . $pkey => $linker_record_id,
         'chado-' . $field_table . '__' . 'featuremap_id' => $fm_record_id,
         'chado-' . $field_table . '__' . $fkey_lcolumn => $record_id,
         'chado-' . $field_table . '__' . 'featuremap_entity_id' => $fm_entity_id,

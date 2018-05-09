@@ -166,8 +166,8 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       'required' => FALSE,
       'settings' => [
         'auto_attach' => FALSE,
-        'chado_table' => 'organism_featuremap',
-        'chado_column' => 'organism_featuremap_id',
+        'chado_table' => 'featuremap_organism',
+        'chado_column' => 'featuremap_organism_id',
         'base_table' => 'organism',
       ],
       'widget' => [
