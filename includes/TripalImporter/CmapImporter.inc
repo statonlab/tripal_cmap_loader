@@ -143,7 +143,7 @@ class CmapImporter extends TripalImporter {
     $this->parse_cmap($analysis_id, $cmap_file, $featuremap_id, $map_type_id);
   }
 
-  private function parse_cmap($analysis_id, $file, $featuremap_id, $map_type_id) {
+  public function parse_cmap($analysis_id, $file, $featuremap_id, $map_type_id) {
 
     $lines = file($file, FILE_SKIP_EMPTY_LINES);
     $prev_map_feature = NULL;

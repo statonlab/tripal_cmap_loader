@@ -50,6 +50,23 @@ class CmapImporterTest extends TripalTestCase {
   public function testImporterLoadingStuff() {
 
     $importer = new  \CmapImporter;
+    // $this->create_import_job($importer);
+
+    //Not allowed.  dbtransaction exception.
+    // $this->run();
+
+    $cv_id = $this->get_so_id();//should only allow SO terms...
+
+    $analysis = factory('chado.analysis')->create();
+    $featuremap = factory('chado.featuremap')->create();
+    $type = factory('chado.cvterm')->create(['cv_id' => $cv_id]);
+    $file = __DIR__ . '/../example/c_mollisima_example.cmap';
+
+    //$importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id);
+
+  }
+
+  private function create_import_job(&$importer) {
 
     $analysis = factory('chado.analysis')->create();
     $fmap = factory('chado.featuremap')->create();
@@ -60,9 +77,18 @@ class CmapImporterTest extends TripalTestCase {
 
     $importer->create($run_args, $file_details = ['file_local' => __DIR__ . '/../example/c_mollisima_example.cmap']);
 
-
   }
-  //  dont think we want to test a submit because we don't want to submit a job!  Maybe its OK though because itll roll back the db???
 
-
+  /**
+   * get the chado cv id for the sequence ontology.
+   *
+   * @return mixed
+   */
+  private function get_so_id() {
+    $query = db_select('chado.cv', 'CV');
+    $query->fields('CV', ['cv_id']);
+    $query->condition('CV.name', 'sequence');
+    $cv_id = $query->execute()->fetchField();
+    return $cv_id;
+  }
 }
