@@ -5,17 +5,13 @@ namespace Tests;
 use StatonLab\TripalTestSuite\TripalTestCase;
 use StatonLab\TripalTestSuite\DBTransaction;
 
-
 require_once(__DIR__ . '/../includes/TripalImporter/CmapImporter.inc');
-//use tripal_cmap_loader;
 
 /**
- * Class ExampleTest
+ * Class CmapImporterTest
  *
- * Note that test classes must have a suffix of Test.php and the filename
- * must match the class name.
+ * Tests the cmap importer.
  *
- * @package Tests
  */
 class CmapImporterTest extends TripalTestCase {
 
@@ -28,22 +24,24 @@ class CmapImporterTest extends TripalTestCase {
     $importer = new  \CmapImporter;
     $this->assertNotNull($importer);
 
-    factory('chado.featuremap');
+    $featuremap = factory('chado.featuremap')->create();
+
     $form = [];
     $form_state = [];
     $form = $importer->form($form, $form_state);
     $this->assertNotEmpty($form);
     $options = $form['featuremap_id']['#options'];
-    $this->assertGreaterThan(1, count($options));
+
+    $this->assertGreaterThan(1, count($options));//please select is an option by default.
   }
 
   public function testImporterFormValidator() {
     $importer = new  \CmapImporter;
 
-    $fmap = factory('chado.featuremap');
-    $form_state =[];
+    $fmap = factory('chado.featuremap')->create();
+    $form_state = [];
 
-      $form_state['values']['featuremap_id'] = $fmap->featuremap_id;
+    $form_state['values']['featuremap_id'] = $fmap->featuremap_id;
     $form = [];
     $importer->formValidate($form, $form_state);
   }
@@ -53,8 +51,8 @@ class CmapImporterTest extends TripalTestCase {
 
     $importer = new  \CmapImporter;
 
-    $analysis = factory('chado.analysis');
-    $fmap = factory('chado.featuremap');
+    $analysis = factory('chado.analysis')->create();
+    $fmap = factory('chado.featuremap')->create();
     $run_args = [
       'analysis_id' => $analysis->analysis_id,
       'featuremap_id' => $fmap->featuremap_id,
