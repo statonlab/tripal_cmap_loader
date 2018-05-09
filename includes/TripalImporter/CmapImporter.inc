@@ -26,9 +26,11 @@ class CmapImporter extends TripalImporter {
    * An array containing the extensions of allowed file types.
    */
   public static $file_types = ['txt', 'cmap'];
+
   //I THINK MAP IS REDUNDANT WITH ANALYSIS?
 
   public static $use_analysis = FALSE;
+
   public static $require_analysis = FALSE;
 
 
@@ -54,7 +56,7 @@ class CmapImporter extends TripalImporter {
    */
   public function form($form, &$form_state) {
 
-    $form['instructions']= [
+    $form['instructions'] = [
       '#markup' => '<p>This loader makes several assumptions.
 <ul>
 <li>Each map item has a map accession (column 0) and map name (column 1).  These correspond to the map feature\'s UNIQUE NAME and NAME, respectively.
@@ -67,7 +69,7 @@ class CmapImporter extends TripalImporter {
 </li>
 <li>if the features cannot be found via accession == uniquename, they will be created using the feature type specified in the feature type accession column. </li>
 </ul>
-</p>'
+</p>',
     ];
     $featuremap_options = $this->get_featuremap_options();
 
@@ -81,6 +83,18 @@ class CmapImporter extends TripalImporter {
       '#type' => 'select',
       '#options' => $featuremap_options,
     ];
+
+    $organism_options = $this->get_organism_options();
+
+    $organism_options[0] = '--Please Select--';
+
+    $form['organism_id'] = [
+      '#title' => t('Organism'),
+      '#description' => t('If features are not found in Chado, they will be created.  This is the organism the features will be created for.'),
+      '#type' => 'select',
+      '#options' => $organism_options,
+    ];
+
 
     $cv = tripal_get_cv(['name' => 'sequence']);
     $cv_id = $cv->cv_id;
@@ -110,7 +124,9 @@ class CmapImporter extends TripalImporter {
     if ($form_state['values']['featuremap_id'] === 0) {
       form_set_error('featuremap_id', t('please select a featurmap (map).  If a featuremap does not exist, you must create one.'));
     };
-
+    if ($form_state['values']['organism_id'] === 0) {
+      form_set_error('organism_id', t('please select an organism.'));
+    };
     $map_type = $form_state['values']['map_type'];
     //check that this is a valid SO term....
 
@@ -134,16 +150,26 @@ class CmapImporter extends TripalImporter {
     $arguments = $this->arguments['run_args'];
     $analysis_id = $arguments['analysis_id'];
     $featuremap_id = $arguments['featuremap_id'];
+    $organism_id = $arguments['organism_id'];
 
     dpm($featuremap_id);
     $cmap_file = trim($this->arguments['files'][0]['file_path']);
 
     $map_type_id = 100; //cvterm for the map type.  IE.... chromosome? Linkage group?  let's give this variable a better name.
 
-    $this->parse_cmap($analysis_id, $cmap_file, $featuremap_id, $map_type_id);
+    $this->parse_cmap($analysis_id, $cmap_file, $featuremap_id, $map_type_id, $organism_id);
   }
 
-  public function parse_cmap($analysis_id, $file, $featuremap_id, $map_type_id) {
+  /**
+   * @param $analysis_id
+   * @param $file
+   * @param $featuremap_id
+   * @param $map_type_id
+   * @param $organism_id
+   *
+   * @throws \Exception
+   */
+  public function parse_cmap($analysis_id, $file, $featuremap_id, $map_type_id, $organism_id) {
 
     $lines = file($file, FILE_SKIP_EMPTY_LINES);
     $prev_map_feature = NULL;
@@ -174,47 +200,40 @@ class CmapImporter extends TripalImporter {
         continue;
       }
 
-      if ($line_count % 1000 === 0){
+      if ($line_count % 1000 === 0) {
         print("processing marker {$line_count}");
       }
 
-      $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id);
+      $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
 
       $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases);
 
       //insert into featurepos
       $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature);
       //insert into featurerange
-      if ($feature_start != $feature_stop){
+      if ($feature_start != $feature_stop) {
         $this->insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop);
       }
       $line_count++;
     }
-
-    print("\nSuccess");
   }
 
 
-  private function get_map_feature($map_acc, $map_name, $map_type_id) {
+  private function get_map_feature($map_acc, $map_name, $map_type_id, $organism_id) {
     //get map feature if it already exists and return it
     $query = db_select("chado.feature", 'F')
       ->fields('F', ['feature_id'])
-      ->condition('unique_name', $map_acc);
+      ->condition('uniquename', $map_acc);
     //if it doesnt, insert and return it
     $map_feature_id = $query->execute()->fetchField();
 
     if (!$map_feature_id) {
-      $insert = db_insert('chado.feature', 'F');
+      $insert = db_insert('chado.feature');
       $insert->fields([
-        $organism_id,
-        $map_name,
-        $map_acc,
-        NULL,
-        NULL,
-        NULL,
-        $map_type_id,
-        FALSE,
-        FALSE,
+       'organism_id' => $organism_id,
+       'name' => $map_name,
+       'uniquename' => $map_acc,
+       'type_id' => $map_type_id,
       ]);
       $map_feature_id = $insert->execute();
     }
@@ -222,7 +241,7 @@ class CmapImporter extends TripalImporter {
     return $map_feature_id;
   }
 
-  private function insert_featurepos($featuremap_id, $marker_feature, $map_feature){
+  private function insert_featurepos($featuremap_id, $marker_feature, $map_feature) {
 
   }
 
@@ -251,6 +270,18 @@ class CmapImporter extends TripalImporter {
       $out[$result->featuremap_id] = $result->name;
     }
     return $out;
+  }
+
+  function get_organism_options() {
+    $out = [];
+    $query = db_select('chado.organism', 'O');
+    $query->fields('O', ['organism_id', 'abbreviation']);
+    $results = $query->execute()->fetchAll();
+    foreach ($results as $result) {
+      $out[$result->organism_id] = $result->abbreviation;
+    }
+    return $out;
+
   }
 
 }
