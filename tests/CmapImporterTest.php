@@ -17,7 +17,11 @@ require_once(__DIR__.'/../includes/TripalImporter/CmapImporter.inc');
  */
 class CmapImporterTest extends TripalTestCase
 {
-    public function testInitClass()
+  use DBTransaction;
+  /*
+   * Tests the form itself.  This means making sure select options populate etc...
+   */
+    public function testImporterForm()
     {
 $importer = new  \CmapImporter;
 $this->assertNotNull($importer);
@@ -29,6 +33,19 @@ $form = $importer->form($form, $form_state);
 $this->assertNotEmpty($form);
 $options = $form['featuremap_id']['#options'];
 $this->assertGreaterThan(1, count($options));
-
     }
+
+  public function testImporterFormValidator() {
+    $importer = new  \CmapImporter;
+
+    $fmap = factory('chado.featuremap');
+    $form_state = ['values']['featuremap_id'] = $fmap->featuremap_id;
+    $form = [];
+    $importer->formValidate($form, $form_state);
+  }
+
+  //  dont think we want to test a submit because we don't want to submit a job!  Maybe its OK though because itll roll back the db???
+
+  
+
 }
