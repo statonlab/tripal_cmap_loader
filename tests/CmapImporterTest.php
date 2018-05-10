@@ -25,6 +25,7 @@ class CmapImporterTest extends TripalTestCase {
     $this->assertNotNull($importer);
 
     $featuremap = factory('chado.featuremap')->create();
+    $organism = factory('chado.organism')->create();
 
     $form = [];
     $form_state = [];

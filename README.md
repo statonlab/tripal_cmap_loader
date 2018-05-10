@@ -1,8 +1,14 @@
-The only goal of this module is to provide a Tripal 3 importer for Cmap files that conforms to the [Chado map module](http://gmod.org/wiki/Chado_Map_Module) schematic.  We hope to use existing modules for display (ie [cmapjs by legume federation](https://github.com/LegumeFederation/cmap-js)).
+[![Build Status](https://travis-ci.org/statonlab/tripal_cmap_loader.svg?branch=master)](https://travis-ci.org/statonlab/tripal_cmap_loader)
+
+**Status:** Not ready for production.
+
+## Tripal Cmap
+
+This module currently provides a Tripal 3 importer for Cmap files that conforms to the [Chado map module](http://gmod.org/wiki/Chado_Map_Module) schematic.  We hope to use existing modules for display (ie [cmapjs by legume federation](https://github.com/LegumeFederation/cmap-js)).  A field utilizing cmap.js will be included in this module soon.
 
 
 ## Expected CMAP data
-The below table shows an example CMAP file.  The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
+The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
 currently we ignore the is_landmark and feature_aliases columns.
 
 
@@ -20,3 +26,15 @@ currently we ignore the is_landmark and feature_aliases columns.
 | C_mollisima_A | A        | 0         | 90.4     | CmSNP00251   | CmSNP00251        |                 | 17.1          | 17.1         | SNP              | 0           |
 | C_mollisima_A | A        | 0         | 90.4     | CmSNP01050   | CmSNP01050        |                 | 19.5          | 19.5         | SNP              | 0           |
 | C_mollisima_A | A        | 0         | 90.4     | CmSNP00977   | CmSNP00977        |                 | 20.8          | 20.8         | SNP              | 0           |
+
+
+## Using the importer
+Before loading the file, create a featuremap (Tripal 3 bundle: Map) entity record.
+  
+  You will need to select the following when loading a cmap file:
+  * organism
+  * featuremap
+  * sequence ontology term for the mapping features.
+  
+You must choose a single organism when loading the map: this is the organism that will be used for **new features created**.  Two types of things will be loaded into Chado: the mapping feature (a chromosome, a scaffold), and the marker feature (a SNP).  The type_id for the marker is taken from the `feature_type_acc` column: that term must be in the sequence ontology.  The mapping feature is chosen in the loader. 
+
