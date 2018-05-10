@@ -153,21 +153,20 @@ class CmapImporterTest extends TripalTestCase {
    * @dataProvider marker_provider
    */
   public function testImporterCreatesMarkers($name, $uname, $start, $type_name, $mapping_feature) {
-   // ob_start();
+    ob_start();
     $this->run_importer();
-  //  ob_end_clean();
+    ob_end_clean();
 
     //were features loaded?
     $query = db_select('chado.feature', 'CF');
     $query->fields('CF', ['name', 'uniquename', 'type_id']);
     $query->join('chado.cvterm', 'CV', 'CF.type_id = CV.cvterm_id');
-    $query->fields('CV', ['name' => 'cvterm_name']);
+    $query->fields('CV', [ 'name']);
     $query->condition('CF.uniquename', $uname);
     $result = $query->execute()->fetchObject();
-
     $this->assertEquals($name, $result->name);
     $this->assertEquals($uname, $result->uniquename);
-    $this->assertEquals($type_name, $result->cvterm_name);
+    $this->assertEquals($type_name, $result->cv_name);
   }
 
   /**
@@ -206,8 +205,8 @@ class CmapImporterTest extends TripalTestCase {
     return [
 
       ['CmSNP00665', 'CmSNP00665', '50.4', 'SNP', 'L'],
-      ['CmSI0928', 'CmSI0928', '44.8', 'SSR', 'L'],
-      ['CmSI0407', 'CmSI0407', '7.5', 'SSR', 'A'],
+      ['CmSI0928', 'CmSI0928', '44.8', 'microsatellite', 'L'],
+      ['CmSI0407', 'CmSI0407', '7.5', 'microsatellite', 'A'],
     ];
 
   }

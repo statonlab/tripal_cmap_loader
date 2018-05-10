@@ -241,18 +241,27 @@ class CmapImporter extends TripalImporter {
     return $map_feature_id;
   }
 
-
+  /**
+   * @param $feature_acc
+   * @param $feature_name
+   * @param $feature_aliases
+   * @param $type_name
+   * @param $organism_id
+   *
+   * @return mixed
+   */
   private function get_marker_feature($feature_acc, $feature_name, $feature_aliases, $type_name, $organism_id) {
     //get type id
     $query = db_select("chado.cvterm", 'CVT');
     $query->fields('CVT', ['cvterm_id']);
-    $query->join('chado.cv', 'CV');
+    $query->join('chado.cv', 'CV', 'CV.cv_id = CVT.cv_id');
     $query->condition('CVT.name', $type_name);
     $query->condition('CV.name', 'sequence');
     $type_id = $query->execute()->fetchField();
 
     if (!$type_id) {
-      print ("ERROR: SO term not found for " . $type_name);
+      //TODO: not how we do this...
+      throwException("ERROR: SO term not found for " . $type_name);
     }
     //get feature if it already exists and return it
     //get map feature if it already exists and return it
@@ -315,4 +324,19 @@ class CmapImporter extends TripalImporter {
 
   }
 
+//  /**
+//   * a swap function to replace some common terms that arent in SO with SO terms.
+//   *
+//   * @param $term
+//   *
+//   * @return string
+//   */
+//  private function swap_so_term_names($term){
+//    switch (strtolower($term)){
+//      case "SSR":
+//        return "microsatellite";
+//      default:
+//        return $term;
+//    }
+//  }
 }
