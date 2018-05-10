@@ -176,6 +176,7 @@ class CmapImporter extends TripalImporter {
     $prev_map_feature = NULL;
 
     $line_count = 0;
+    $type_id_mapper = [];//Keep track of type IDs so we dont have to look up each time.
 
     foreach ($lines as $line_num => $line) {
 
@@ -205,12 +206,28 @@ class CmapImporter extends TripalImporter {
         print("processing marker {$line_count}");
       }
 
+      if (!isset($type_id_mapper[$feature_type_acc])) {
+        $marker_type_id = $this->get_so_cvterm($feature_type_acc);
+        if (!$marker_type_id) {
+          print("{$feature_type_acc} is not loaded in the sequence ontology.");
+          return;
+        }
+        $type_id_mapper[$feature_type_acc] = $marker_type_id;
+      }
+      else {
+        $marker_type_id = $type_id_mapper[$feature_type_acc];
+      }
+
+
+
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
 
-      $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $feature_type_acc, $organism_id);
+      $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $marker_type_id, $organism_id);
 
       //insert into featurepos
-      $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature);
+      if ($feature_start === $feature_stop) {
+        $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature, $feature_start);
+      }
       //insert into featurerange
       if ($feature_start != $feature_stop) {
         $this->insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop);
@@ -250,19 +267,8 @@ class CmapImporter extends TripalImporter {
    *
    * @return mixed
    */
-  private function get_marker_feature($feature_acc, $feature_name, $feature_aliases, $type_name, $organism_id) {
-    //get type id
-    $query = db_select("chado.cvterm", 'CVT');
-    $query->fields('CVT', ['cvterm_id']);
-    $query->join('chado.cv', 'CV', 'CV.cv_id = CVT.cv_id');
-    $query->condition('CVT.name', $type_name);
-    $query->condition('CV.name', 'sequence');
-    $type_id = $query->execute()->fetchField();
+  private function get_marker_feature($feature_acc, $feature_name, $feature_aliases, $type_id, $organism_id) {
 
-    if (!$type_id) {
-      //TODO: not how we do this...
-      throwException("ERROR: SO term not found for " . $type_name);
-    }
     //get feature if it already exists and return it
     //get map feature if it already exists and return it
     $query = db_select("chado.feature", 'F');
@@ -286,13 +292,40 @@ class CmapImporter extends TripalImporter {
     // if it doesnt, insert and return it
   }
 
-  private function insert_featurepos($featuremap_id, $marker_feature, $map_feature) {
+  /**
+   * @param $featuremap_id
+   * @param $marker_feature
+   * @param $map_feature
+   * @param $position
+   */
+  private function insert_featurepos($featuremap_id, $marker_feature, $map_feature, $position) {
+
+    $insert = db_insert('chado.featurepos');
+    $insert->fields([
+      'featuremap_id' => $featuremap_id,
+      'feature_id' => $marker_feature,
+      'map_feature_id' => $map_feature,
+      'mappos' => $position,
+    ]);
+
+    $outcome = $insert->execute();
 
   }
 
-
+  /**
+   * Inserts into featurerange.  Cmap files will only have a range with a
+   * discrete start/stop.  The featurerange table can support start/stop ranges
+   * but cmap does not.
+   *
+   * @param $featuremap_id
+   * @param $marker_feature
+   * @param $map_feature
+   * @param $feature_start
+   * @param $feature_stop
+   */
   private function insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop) {
 
+    print ("not implemented yet");
   }
 
   /**
@@ -324,19 +357,32 @@ class CmapImporter extends TripalImporter {
 
   }
 
-//  /**
-//   * a swap function to replace some common terms that arent in SO with SO terms.
-//   *
-//   * @param $term
-//   *
-//   * @return string
-//   */
-//  private function swap_so_term_names($term){
-//    switch (strtolower($term)){
-//      case "SSR":
-//        return "microsatellite";
-//      default:
-//        return $term;
-//    }
-//  }
+  private function get_so_cvterm($term) {
+    //get type id
+    $query = db_select("chado.cvterm", 'CVT');
+    $query->fields('CVT', ['cvterm_id']);
+    $query->join('chado.cv', 'CV', 'CV.cv_id = CVT.cv_id');
+    $query->condition('CVT.name', $term);
+    $query->condition('CV.name', 'sequence');
+    $type_id = $query->execute()->fetchField();
+
+    return $type_id;
+
+  }
+
+  //  /**
+  //   * a swap function to replace some common terms that arent in SO with SO terms.
+  //   *
+  //   * @param $term
+  //   *
+  //   * @return string
+  //   */
+  //  private function swap_so_term_names($term){
+  //    switch (strtolower($term)){
+  //      case "SSR":
+  //        return "microsatellite";
+  //      default:
+  //        return $term;
+  //    }
+  //  }
 }

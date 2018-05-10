@@ -64,11 +64,18 @@ Factory::define('chado.organism', function (Faker\Generator $faker) {
 
 /** @see  StatonLab\TripalTestSuite\Database\Factory::define() */
 Factory::define('chado.feature', function (Faker\Generator $faker) {
+
+  //look up sequence cv_id
+  $query = db_select('chado.cv', 'CV');
+  $query->fields('CV', ['cv_id']);
+  $query->condition('CV.name', 'sequence');
+  $cv_id = $query->execute()->fetchField();
+
     return [
         'name' => $faker->name,
         'uniquename' => $faker->unique()->name,
         'organism_id' => factory('chado.organism')->create()->organism_id,
-        'type_id' => factory('chado.cvterm')->create()->cvterm_id,
+        'type_id' => factory('chado.cvterm')->create(['cv_id' => $cv_id])->cvterm_id,
     ];
 });
 
