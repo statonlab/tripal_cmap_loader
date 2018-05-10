@@ -40,6 +40,9 @@ class CmapImporterTest extends TripalTestCase {
 
   }
 
+  /**
+   * @group form
+   */
   public function testImporterFormValidator() {
     $importer = new  \CmapImporter;
 
@@ -48,10 +51,16 @@ class CmapImporterTest extends TripalTestCase {
 
     $form_state['values']['featuremap_id'] = $fmap->featuremap_id;
     $form = [];
-    $importer->formValidate($form, $form_state);
+    $form = $importer->formValidate($form, $form_state);
+
   }
 
 
+  /**
+   * Data provider for the map features (chromosomes)
+   *
+   * @return array
+   */
   public function chromosome_name_uname_provider() {
     return [
       ['A', 'C_mollisima_A'],
@@ -61,6 +70,8 @@ class CmapImporterTest extends TripalTestCase {
   }
 
   /**
+   * Test that the map features (chromosomes) are created
+   *
    * @dataProvider chromosome_name_uname_provider
    */
   public function testImporterCreatesChromosomeFeatures($name, $uname) {
@@ -88,18 +99,63 @@ class CmapImporterTest extends TripalTestCase {
   }
 
   /**
+   * test case for when the feature already exists.
+   *
+   * @param $name
+   * @param $uname
+   *
+   * @group check
+   * @throws \Exception
+   * @dataProvider chromosome_name_uname_provider
+   */
+  public function testImporterUpdatesExistingFeatures($name, $uname) {
+    $importer = new  \CmapImporter;
+
+    $seq = 'AAA';
+     factory('chado.feature')->create([
+      'name' => $name,
+      'uniquename' => $uname,
+      'residues' => $seq,
+    ]);
+
+    $cv_id = $this->get_so_id();//should only allow SO terms...
+
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+    $featuremap = factory('chado.featuremap')->create();
+    $type = factory('chado.cvterm')->create(['cv_id' => $cv_id]);
+    $file = __DIR__ . '/../example/c_mollisima_example.cmap';
+    ob_start();
+
+    $importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id, $organism->organism_id);
+    ob_end_clean();
+
+    //Was everything loaded even though this feature existed?
+
+    $query = db_select('chado.feature', 'CF');
+    $query->fields('CF', ['name', 'uniquename', 'type_id', 'residues']);
+    $query->condition('CF.name', $name);
+    $result = $query->execute()->fetchObject();
+
+    $this->assertEquals($name, $result->name);
+    $this->assertEquals($uname, $result->uniquename);
+    $this->assertEquals($seq, $result->residues);
+  }
+
+  /**
    * @param $name
    * @param $uname
    * @param $start
    * @param $type_name
    * @param $mapping_feature
    *
+   * @group failing
    * @dataProvider marker_provider
    */
   public function testImporterCreatesMarkers($name, $uname, $start, $type_name, $mapping_feature) {
-    ob_start();
+   // ob_start();
     $this->run_importer();
-    ob_end_clean();
+  //  ob_end_clean();
 
     //were features loaded?
     $query = db_select('chado.feature', 'CF');
@@ -130,7 +186,12 @@ class CmapImporterTest extends TripalTestCase {
 
     //were features loaded?
     $query = db_select('chado.featurepos', 'CFP');
-    $query->fields('CFP', ['featuremap_id', 'feature_id', 'map_feature_id', 'mappos']);
+    $query->fields('CFP', [
+      'featuremap_id',
+      'feature_id',
+      'map_feature_id',
+      'mappos',
+    ]);
     $query->join('chado.feature', 'CF', 'CF.feature_id = CFP.feature_id');
     $query->join('chado.feature', 'CFTWO', 'CFTWO.feature_id = CFP.map_feature_id');
     $query->fields('CFTWO', ['name' => 'map_feature_name']);
@@ -141,13 +202,13 @@ class CmapImporterTest extends TripalTestCase {
     $this->assertEquals($mapping_feature, $result->map_feature_name);
   }
 
-    public function marker_provider(){
-   return [
+  public function marker_provider() {
+    return [
 
-    ['CmSNP00665', 'CmSNP00665', '50.4', 'SNP', 'L'],
-      ['CmSI0928', 'CmSI0928','44.8','SSR', 'L'],
+      ['CmSNP00665', 'CmSNP00665', '50.4', 'SNP', 'L'],
+      ['CmSI0928', 'CmSI0928', '44.8', 'SSR', 'L'],
       ['CmSI0407', 'CmSI0407', '7.5', 'SSR', 'A'],
-     ];
+    ];
 
   }
 

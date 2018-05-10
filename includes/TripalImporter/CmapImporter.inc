@@ -88,6 +88,8 @@ class CmapImporter extends TripalImporter {
 
     $organism_options[0] = '--Please Select--';
 
+    ksort($organism_options);
+
     $form['organism_id'] = [
       '#title' => t('Organism'),
       '#description' => t('If features are not found in Chado, they will be created.  This is the organism the features will be created for.'),
@@ -152,7 +154,6 @@ class CmapImporter extends TripalImporter {
     $featuremap_id = $arguments['featuremap_id'];
     $organism_id = $arguments['organism_id'];
 
-    dpm($featuremap_id);
     $cmap_file = trim($this->arguments['files'][0]['file_path']);
 
     $map_type_id = 100; //cvterm for the map type.  IE.... chromosome? Linkage group?  let's give this variable a better name.
@@ -206,7 +207,7 @@ class CmapImporter extends TripalImporter {
 
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
 
-      $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases);
+      $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $feature_type_acc, $organism_id);
 
       //insert into featurepos
       $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature);
@@ -218,38 +219,68 @@ class CmapImporter extends TripalImporter {
     }
   }
 
-
   private function get_map_feature($map_acc, $map_name, $map_type_id, $organism_id) {
     //get map feature if it already exists and return it
-    $query = db_select("chado.feature", 'F')
-      ->fields('F', ['feature_id'])
-      ->condition('uniquename', $map_acc);
-    //if it doesnt, insert and return it
+    $query = db_select("chado.feature", 'F');
+    $query->fields('F', ['feature_id']);
+    $query->condition('uniquename', $map_acc);
+    $query->condition('type_id', $map_type_id);
     $map_feature_id = $query->execute()->fetchField();
 
+    //if it doesn't exist insert and return it
     if (!$map_feature_id) {
       $insert = db_insert('chado.feature');
       $insert->fields([
-       'organism_id' => $organism_id,
-       'name' => $map_name,
-       'uniquename' => $map_acc,
-       'type_id' => $map_type_id,
+        'organism_id' => $organism_id,
+        'name' => $map_name,
+        'uniquename' => $map_acc,
+        'type_id' => $map_type_id,
       ]);
       $map_feature_id = $insert->execute();
     }
-
     return $map_feature_id;
+  }
+
+
+  private function get_marker_feature($feature_acc, $feature_name, $feature_aliases, $type_name, $organism_id) {
+    //get type id
+    $query = db_select("chado.cvterm", 'CVT');
+    $query->fields('CVT', ['cvterm_id']);
+    $query->join('chado.cv', 'CV');
+    $query->condition('CVT.name', $type_name);
+    $query->condition('CV.name', 'sequence');
+    $type_id = $query->execute()->fetchField();
+
+    if (!$type_id) {
+      print ("ERROR: SO term not found for " . $type_name);
+    }
+    //get feature if it already exists and return it
+    //get map feature if it already exists and return it
+    $query = db_select("chado.feature", 'F');
+    $query->fields('F', ['feature_id']);
+    $query->condition('uniquename', $feature_acc);
+    $query->condition('type_id', $type_id);
+    //if it doesnt, insert and return it
+    $feature_id = $query->execute()->fetchField();
+
+    if (!$feature_id) {
+      $insert = db_insert('chado.feature');
+      $insert->fields([
+        'organism_id' => $organism_id,
+        'name' => $feature_name,
+        'uniquename' => $feature_acc,
+        'type_id' => $type_id,
+      ]);
+      $feature_id = $insert->execute();
+    }
+    return $feature_id;
+    // if it doesnt, insert and return it
   }
 
   private function insert_featurepos($featuremap_id, $marker_feature, $map_feature) {
 
   }
 
-  private function get_marker_feature($feature_acc, $feature_name, $feature_aliases) {
-    //get feature if it already exists and return it
-
-    // if it doesnt, insert and return it
-  }
 
   private function insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop) {
 
