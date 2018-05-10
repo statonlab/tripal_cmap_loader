@@ -64,7 +64,6 @@ class CmapImporterTest extends TripalTestCase {
   public function chromosome_name_uname_provider() {
     return [
       ['A', 'C_mollisima_A'],
-      ['C', 'C_mollisima_C'],
       ['L', 'C_mollisima_L',],
     ];
   }
@@ -110,21 +109,22 @@ class CmapImporterTest extends TripalTestCase {
    */
   public function testImporterUpdatesExistingFeatures($name, $uname) {
     $importer = new  \CmapImporter;
+    $cv_id = $this->get_so_id();//should only allow SO terms...
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+    $featuremap = factory('chado.featuremap')->create();
+    $type = factory('chado.cvterm')->create(['cv_id' => $cv_id]);
+    $file = __DIR__ . '/../example/c_moll_mini.cmap';
 
+    //Create the chromosome feature we're testing beforehand with some sequence so we'll know it was overwritten
     $seq = 'AAA';
     factory('chado.feature')->create([
       'name' => $name,
       'uniquename' => $uname,
       'residues' => $seq,
+      'type_id' => $type->cvterm_id
     ]);
 
-    $cv_id = $this->get_so_id();//should only allow SO terms...
-
-    $organism = factory('chado.organism')->create();
-    $analysis = factory('chado.analysis')->create();
-    $featuremap = factory('chado.featuremap')->create();
-    $type = factory('chado.cvterm')->create(['cv_id' => $cv_id]);
-    $file = __DIR__ . '/../example/c_mollisima_example.cmap';
     ob_start();
     $importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id, $organism->organism_id);
     ob_end_clean();
@@ -188,17 +188,14 @@ class CmapImporterTest extends TripalTestCase {
     $query = db_select('chado.featurepos', 'CFP');
     $query->fields('CFP', [
       'featuremap_id',
-      'feature_id',
       'map_feature_id',
       'mappos',
     ]);
-
     $query->join('chado.feature', 'CF', 'CF.feature_id = CFP.feature_id');
     $query->join('chado.feature', 'CFTWO', 'CFTWO.feature_id = CFP.map_feature_id');
     $query->fields('CFTWO', ['name']);
     $query->condition('CF.uniquename', $uname);
     $result = $query->execute()->fetchObject();
-
     $this->assertNotFalse($result);
     $this->assertEquals($start, $result->mappos);
     $this->assertEquals($mapping_feature, $result->name);
@@ -233,7 +230,7 @@ class CmapImporterTest extends TripalTestCase {
     $analysis = factory('chado.analysis')->create();
     $featuremap = factory('chado.featuremap')->create();
     $type = factory('chado.cvterm')->create(['cv_id' => $cv_id]);
-    $file = __DIR__ . '/../example/c_mollisima_example.cmap';
+    $file = __DIR__ . '/../example/c_moll_mini.cmap';
 
     $importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id, $organism->organism_id);
 
@@ -253,7 +250,7 @@ class CmapImporterTest extends TripalTestCase {
       'featuremap_id' => $fmap->featuremap_id,
     ];
 
-    $importer->create($run_args, $file_details = ['file_local' => __DIR__ . '/../example/c_mollisima_example.cmap']);
+    $importer->create($run_args, $file_details = ['file_local' => __DIR__ . '/../example/c_moll_mini.cmap']);
 
   }
 
