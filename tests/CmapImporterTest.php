@@ -41,20 +41,23 @@ class CmapImporterTest extends TripalTestCase {
 
   }
 
-//  /**
-//   * @group form
-//   */
-//  public function testImporterFormValidator() {
-//    $importer = new  \CmapImporter;
-//
-//    $fmap = factory('chado.featuremap')->create();
-//    $form_state = [];
-//
-//    $form_state['values']['featuremap_id'] = $fmap->featuremap_id;
-//    $form = [];
-//    $form = $importer->form($form, $form_state);
-//    $form = $importer->formValidate($form, $form_state);
-//  }
+  /**
+   * @group form
+   */
+  public function testImporterFormValidator() {
+    $importer = new  \CmapImporter;
+
+    $fmap = factory('chado.featuremap')->create();
+    $form_state = [];
+
+    $form = [];
+    $form = $importer->form($form, $form_state);
+    $form_state['values']['featuremap_id'] = $fmap->featuremap_id;
+$form_state['values']['map_type'] = 'not a so term';
+   $importer->formValidate($form, $form_state);
+
+    var_dump($form_state);
+  }
 
 
   /**

@@ -130,8 +130,15 @@ class CmapImporter extends TripalImporter {
       form_set_error('organism_id', t('please select an organism.'));
     };
     $map_type = $form_state['values']['map_type'];
-    //check that this is a valid SO term....
+    $term_id = $this->get_so_cvterm($map_type);
 
+    if (!$term_id){
+      form_set_error('map_type', t('Term not found in sequence ontology.'));
+    }
+    $form['map_type_id'] = [
+      '#type' => 'value',
+      '#value' => $term_id
+    ];
   }
 
   /**
@@ -153,15 +160,18 @@ class CmapImporter extends TripalImporter {
     $analysis_id = $arguments['analysis_id'];
     $featuremap_id = $arguments['featuremap_id'];
     $organism_id = $arguments['organism_id'];
+    $map_type = $arguments['map_type'];
+    $map_type_id = $this->get_so_cvterm($map_type);
 
     $cmap_file = trim($this->arguments['files'][0]['file_path']);
 
-    $map_type_id = 100; //cvterm for the map type.  IE.... chromosome? Linkage group?  let's give this variable a better name.
 
     $this->parse_cmap($analysis_id, $cmap_file, $featuremap_id, $map_type_id, $organism_id);
   }
 
   /**
+   * Parses and loads a cmap file.
+   *
    * @param $analysis_id
    * @param $file
    * @param $featuremap_id
@@ -209,8 +219,7 @@ class CmapImporter extends TripalImporter {
       if (!isset($type_id_mapper[$feature_type_acc])) {
         $marker_type_id = $this->get_so_cvterm($feature_type_acc);
         if (!$marker_type_id) {
-          print("{$feature_type_acc} is not loaded in the sequence ontology.");
-          return;
+          throw new Exception("{$feature_type_acc} is not loaded in the sequence ontology.");
         }
         $type_id_mapper[$feature_type_acc] = $marker_type_id;
       }
@@ -218,10 +227,7 @@ class CmapImporter extends TripalImporter {
         $marker_type_id = $type_id_mapper[$feature_type_acc];
       }
 
-
-
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
-
       $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $marker_type_id, $organism_id);
 
       //insert into featurepos
@@ -236,6 +242,16 @@ class CmapImporter extends TripalImporter {
     }
   }
 
+  /**
+   * Gets the map feature.  Inserts first if necessary.
+   *
+   * @param $map_acc
+   * @param $map_name
+   * @param $map_type_id
+   * @param $organism_id
+   *
+   * @return mixed
+   */
   private function get_map_feature($map_acc, $map_name, $map_type_id, $organism_id) {
     //get map feature if it already exists and return it
     $query = db_select("chado.feature", 'F');
@@ -259,6 +275,8 @@ class CmapImporter extends TripalImporter {
   }
 
   /**
+   * Retrieves the marker feature.  Inserts first if necessary.
+   *
    * @param $feature_acc
    * @param $feature_name
    * @param $feature_aliases
@@ -293,12 +311,16 @@ class CmapImporter extends TripalImporter {
   }
 
   /**
+   * Insert into feature position.
+   *
    * @param $featuremap_id
    * @param $marker_feature
    * @param $map_feature
    * @param $position
    */
   private function insert_featurepos($featuremap_id, $marker_feature, $map_feature, $position) {
+
+    //TODO: we should deal with duplicate constraints.
 
     $insert = db_insert('chado.featurepos');
     $insert->fields([
@@ -345,7 +367,13 @@ class CmapImporter extends TripalImporter {
     return $out;
   }
 
-  function get_organism_options() {
+  /**
+   * Gets the organisms on the site in [organism_id => abbreviation].  For use
+   * with select box.
+   *
+   * @return array
+   */
+  private function get_organism_options() {
     $out = [];
     $query = db_select('chado.organism', 'O');
     $query->fields('O', ['organism_id', 'abbreviation']);
@@ -354,35 +382,22 @@ class CmapImporter extends TripalImporter {
       $out[$result->organism_id] = $result->abbreviation;
     }
     return $out;
-
   }
 
+  /**
+   * Given text term name, get the sequence ontology cvterm_id.
+   *
+   * @param $term
+   *
+   * @return mixed
+   */
   private function get_so_cvterm($term) {
-    //get type id
     $query = db_select("chado.cvterm", 'CVT');
     $query->fields('CVT', ['cvterm_id']);
     $query->join('chado.cv', 'CV', 'CV.cv_id = CVT.cv_id');
     $query->condition('CVT.name', $term);
     $query->condition('CV.name', 'sequence');
     $type_id = $query->execute()->fetchField();
-
     return $type_id;
-
   }
-
-  //  /**
-  //   * a swap function to replace some common terms that arent in SO with SO terms.
-  //   *
-  //   * @param $term
-  //   *
-  //   * @return string
-  //   */
-  //  private function swap_so_term_names($term){
-  //    switch (strtolower($term)){
-  //      case "SSR":
-  //        return "microsatellite";
-  //      default:
-  //        return $term;
-  //    }
-  //  }
 }
