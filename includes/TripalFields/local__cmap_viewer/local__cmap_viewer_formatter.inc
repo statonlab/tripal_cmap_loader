@@ -81,6 +81,8 @@ class local__cmap_viewer_formatter extends TripalFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+    $instances = tripal_get_field_types();
+    var_dump( $instances);
     // Get the settings
     $settings = $display['settings'];
     dpm("whats up");
