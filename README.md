@@ -8,7 +8,7 @@ This module currently provides a Tripal 3 importer for Cmap files that conforms 
 
 
 ## Expected CMAP data
-The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
+The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  This cmap file is a converted FPC file(see [here for code](https://github.com/statonlab/fpc_to_cmap_converter)).  The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
 currently we ignore the is_landmark and feature_aliases columns.
 
 

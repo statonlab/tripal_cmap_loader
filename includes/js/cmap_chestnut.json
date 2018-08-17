@@ -1,0 +1,51 @@
+{
+  "#": "cmap-js chinese chestnut configuration file",
+  "header": ": Chinese Chestnut Genetic map",
+  "attribution": "HWG",
+  "initialView": [
+    {
+      "source": "Chinese Chestnut Genetic Map",
+      "map": "A"
+    },
+      {
+        "source": "Chinese Chestnut Genetic Map",
+        "map": "B"
+    },
+    {
+      "source": "Chinese Chestnut Genetic Map",
+      "map": "C"
+    },
+    {
+      "source": "Chinese Chestnut Genetic Map",
+      "map": "D"
+    },
+    {
+      "source": "Chinese Chestnut Genetic Map",
+      "map": "E"
+    },
+    {
+      "source": "Chinese Chestnut Genetic Map",
+      "map": "F"
+    },
+    {
+      "source": "Chinese Chestnut Genetic Map",
+      "map": "L"
+    }
+
+  ],
+  "sources": [
+    {
+      "id": "Chinese Chestnut Genetic Map",
+      "method": "GET",
+      "url": "data/c_mollisima_example.cmap",
+      "filters": [],
+      "linkouts": [
+        {
+          "featuretypePattern": "^(microsatellite|SSR|SNP|AFLP|STS|RAPD)$",
+          "url": "https://legumeinfo.org/feature/Phaseolus/vulgaris/genetic_marker/${item.id}",
+          "text": "View marker at LIS"
+        }
+      ]
+    }
+  ]
+}
