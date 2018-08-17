@@ -40,6 +40,8 @@ You must choose a single organism when loading the map: this is the organism tha
 
 
 # Cmap column to Chado mapping
+Note that the cmap format is not consistent, or at least we have not found a definitive list of columns.  The loader expects the following 11 columns.  If your file is not 11 columns wide, it will not load.  The first column **must** be map_acc
+
 
 | cmap column            | chado entry                                            |
 |------------------------|--------------------------------------------------------|
