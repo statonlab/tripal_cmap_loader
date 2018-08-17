@@ -134,6 +134,11 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       'settings' => [
         'auto_attach' => FALSE,
         'text_processing' => 0,
+        'term_vocabulary' => 'local',
+        // The name of the term.
+        'term_name' => 'cmap_viewer',
+        // The unique ID (i.e. accession) of the term.
+        'term_accession' => 'cmap_viewer',
       ],
       'widget' => [
         'type' => 'text_textfield',
@@ -152,7 +157,6 @@ function tripal_cmap_loader_bundle_instances_info($entity_type, $bundle) {
       ],
     ];
   }
-
 
   if (isset($bundle->data_table) AND ($bundle->data_table == 'organism')) {
     $field_name = 'data__map';
