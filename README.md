@@ -38,3 +38,19 @@ Before loading the file, create a featuremap (Tripal 3 bundle: Map) entity recor
   
 You must choose a single organism when loading the map: this is the organism that will be used for **new features created**.  Two types of things will be loaded into Chado: the mapping feature (a chromosome, a scaffold), and the marker feature (a SNP).  The type_id for the marker is taken from the `feature_type_acc` column: that term must be in the sequence ontology.  The mapping feature is chosen in the loader. 
 
+
+# Cmap column to Chado mapping
+
+| cmap column            | chado entry                                            |
+|------------------------|--------------------------------------------------------|
+| map_acc                | uniquename for mapping feature IE chromosome, scaffold |
+| map_name               | name for mapping feature IE chromsome, scaffold        |
+| map_start              | not used                                               |
+| map_stop               | not used                                               |
+| feature_name           | name for marker feature                                |
+| feature_accession      | uniquename for marker feature                          |
+| feature_aliases        | not used                                               |
+| feature_start          | featurepos record for start                            |
+| feature_stop           | featurepos record for stop                             |
+| feature_type_accession | type_id for marker feature                             |
+| is_landmark            | not used                                               |
