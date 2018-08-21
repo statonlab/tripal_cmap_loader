@@ -441,6 +441,18 @@ class CmapImporter extends TripalImporter {
     $locus_id = $query->execute()->fetchField();
 
     if ($locus_id) {
+
+      $query = db_select('chado.feature_relationship', 'FR');
+      $relationship = $query->condition('subject_id', $locus_id)
+        ->condition('object_id', $marker_feature)
+        ->condition('type_id', $relationship_type_id)
+        ->fields('FR', ['feature_relationship_id'])
+        ->execute()
+        ->fetchField();
+
+      if ($relationship) {
+        return $locus_id;
+      }
       //add the relationship before returning
       $insert = db_insert('chado.feature_relationship');
       $insert->fields([
@@ -449,7 +461,6 @@ class CmapImporter extends TripalImporter {
         'type_id' => $relationship_type_id,
       ]);
       $insert->execute();
-
     }
 
     //if it doesn't exist insert and return it

@@ -209,7 +209,6 @@ class CmapImporterTest extends TripalTestCase {
    * @param $mapping_feature
    *
    * @dataProvider marker_provider
-   * @group failing
    * @group featurepos
    */
   public function testImporterPopulatesFeaturePos($name, $uname, $start, $type_name, $mapping_feature) {
@@ -232,6 +231,34 @@ class CmapImporterTest extends TripalTestCase {
     $this->assertNotFalse($result);
     $this->assertEquals($start, $result->mappos);
     $this->assertEquals($mapping_feature, $result->name);
+  }
+
+  /**
+   * @param $name
+   * @param $uname
+   * @param $start
+   * @param $type_name
+   * @param $mapping_feature
+   *
+   * @group featurepos
+   * @dataProvider marker_provider
+   */
+  public function testImporterAddsPropsForFeaturepos($name, $uname, $start, $type_name, $mapping_feature) {
+
+    ob_start();
+    $this->run_importer();
+    ob_end_clean();
+
+    //was featureposprop loaded?
+    $query = db_select('chado.featurepos', 'CFP');
+    $query->join('chado.feature', 'CF', 'CF.feature_id = CFP.feature_id');
+    $query->join('chado.featureposprop', 'FPP', 'CFP.featurepos_id = FPP.featurepos_id');
+    $query->fields('FPP', ['value']);
+    $query->condition('CF.uniquename', $uname);
+    $value = $query->fetchField();
+    $this->assertNotNull($value);
+    $this->assertEquals($start, $value);
+
   }
 
   public function marker_provider() {
