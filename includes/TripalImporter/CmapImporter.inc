@@ -132,12 +132,12 @@ class CmapImporter extends TripalImporter {
     $map_type = $form_state['values']['map_type'];
     $term_id = $this->get_so_cvterm($map_type);
 
-    if (!$term_id){
+    if (!$term_id) {
       form_set_error('map_type', t('Term not found in sequence ontology.'));
     }
     $form['map_type_id'] = [
       '#type' => 'value',
-      '#value' => $term_id
+      '#value' => $term_id,
     ];
   }
 
@@ -231,7 +231,7 @@ class CmapImporter extends TripalImporter {
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
       $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $marker_type_id, $organism_id);
 
-      //$locus_feature = $this->get_locus_feature($locus_acc, $marker_feature);
+      $locus_feature = $this->get_locus_feature($locus_acc, $marker_feature, $organism_id);
 
       //insert into featurepos
       if ($feature_start === $feature_stop) {
@@ -403,4 +403,55 @@ class CmapImporter extends TripalImporter {
     $type_id = $query->execute()->fetchField();
     return $type_id;
   }
+
+  private function get_locus_feature($locus_acc, $marker_feature, $organism_id) {
+    $term = chado_get_cvterm(['id' => 'NCIT:C45822']);
+    $locus_type_id = $term->cvterm_id;
+    $term = chado_get_cvterm(['id' => 'OBO_REL:instance_of']);
+    $relationship_type_id = $term->cvterm_id;
+
+    //get feature if it already exists and return it
+    $query = db_select("chado.feature", 'F');
+    $query->fields('F', ['feature_id']);
+    $query->condition('uniquename', $locus_acc);
+    $query->condition('type_id', $locus_type_id);
+    $locus_id = $query->execute()->fetchField();
+
+    if ($locus_id) {
+      //add the relationship before returning
+      $insert = db_insert('chado.feature_relationship');
+      $insert->fields([
+        'subject_id' => $locus_id,
+        'object_id' => $marker_feature,
+        'type_id' => $relationship_type_id,
+      ]);
+      $insert->execute();
+
+    }
+
+    //if it doesn't exist insert and return it
+    if (!$locus_id) {
+      $insert = db_insert('chado.feature');
+      $insert->fields([
+        'organism_id' => $organism_id,
+        'name' => $locus_acc,
+        'uniquename' => $locus_acc,
+        'type_id' => $locus_type_id,
+      ]);
+      $locus_id = $insert->execute();
+
+      //add the relationship too
+
+      $insert = db_insert('chado.feature_relationship');
+      $insert->fields([
+        'subject_id' => $locus_id,
+        'object_id' => $marker_feature,
+        'type_id' => $relationship_type_id,
+      ]);
+      $insert->execute();
+    }
+    return $locus_id;
+
+  }
+
 }
