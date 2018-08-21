@@ -190,6 +190,7 @@ class CmapImporter extends TripalImporter {
 
     foreach ($lines as $line_num => $line) {
 
+
       // split the line into it's columns
       $cols = explode("\t", $line);
       if (sizeof($cols) < 12) {
@@ -229,6 +230,8 @@ class CmapImporter extends TripalImporter {
       }
 
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
+
+
       $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $marker_type_id, $organism_id);
 
       $locus_feature = $this->get_locus_feature($locus_acc, $marker_feature, $organism_id);
@@ -443,16 +446,17 @@ class CmapImporter extends TripalImporter {
     if ($locus_id) {
 
       $query = db_select('chado.feature_relationship', 'FR');
-      $relationship = $query->condition('subject_id', $locus_id)
+        $query->fields('FR', ['feature_relationship_id']);
+      $query->condition('subject_id', $locus_id)
         ->condition('object_id', $marker_feature)
-        ->condition('type_id', $relationship_type_id)
-        ->fields('FR', ['feature_relationship_id'])
-        ->execute()
+        ->condition('type_id', $relationship_type_id);
+      $relationship = $query->execute()
         ->fetchField();
 
       if ($relationship) {
         return $locus_id;
       }
+
       //add the relationship before returning
       $insert = db_insert('chado.feature_relationship');
       $insert->fields([
