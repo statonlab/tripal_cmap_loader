@@ -41,6 +41,28 @@ class CmapImporterTest extends TripalTestCase {
 
   }
 
+
+  public function testImporterCreatesLocusFeature() {
+
+    ob_start();
+    $this->run_importer();
+    ob_end_clean();
+
+    $name = 'CmSNP00329';
+
+    $term = chado_get_cvterm(['id' => 'NCIT:C45822']);
+
+    //were features from beginning and end of file loaded?
+    $query = db_select('chado.feature', 'CF');
+    $query->fields('CF', ['name', 'uniquename', 'type_id']);
+    $query->condition('CF.uniquename', $name);
+    $query->condition('CF.type_id', $term->cvterm_id);
+    $result = $query->execute()->fetchObject();
+    $this->assertNotEmpty($result);
+    $this->assertEquals($name, $result->uniquename);
+
+  }
+
   /**
    * @group form
    */
@@ -53,10 +75,8 @@ class CmapImporterTest extends TripalTestCase {
     $form = [];
     $form = $importer->form($form, $form_state);
     $form_state['values']['featuremap_id'] = $fmap->featuremap_id;
-$form_state['values']['map_type'] = 'not a so term';
-   $importer->formValidate($form, $form_state);
-
-    var_dump($form_state);
+    $form_state['values']['map_type'] = 'not a so term';
+    $importer->formValidate($form, $form_state);
   }
 
 
@@ -126,7 +146,7 @@ $form_state['values']['map_type'] = 'not a so term';
       'name' => $name,
       'uniquename' => $uname,
       'residues' => $seq,
-      'type_id' => $type->cvterm_id
+      'type_id' => $type->cvterm_id,
     ]);
 
     ob_start();
@@ -171,6 +191,7 @@ $form_state['values']['map_type'] = 'not a so term';
     $this->assertEquals($uname, $result->uniquename);
     $this->assertEquals($type_name, $result->cv_name);
   }
+
 
   /**
    * @param $name
@@ -217,7 +238,9 @@ $form_state['values']['map_type'] = 'not a so term';
 
 
   /**
-   * Runs the importer directly, which is great because it bypasses the importer creating a new transaction.
+   * Runs the importer directly, which is great because it bypasses the
+   * importer creating a new transaction.
+   *
    * @throws \Exception
    */
   private function run_importer() {
@@ -238,23 +261,6 @@ $form_state['values']['map_type'] = 'not a so term';
 
     $importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id, $organism->organism_id);
 
-
-  }
-
-  /**
-   * Creates an importer job.  We dont use this because it opens a db transaction.
-   * @param $importer
-   */
-  private function create_import_job(&$importer) {
-
-    $analysis = factory('chado.analysis')->create();
-    $fmap = factory('chado.featuremap')->create();
-    $run_args = [
-      'analysis_id' => $analysis->analysis_id,
-      'featuremap_id' => $fmap->featuremap_id,
-    ];
-
-    $importer->create($run_args, $file_details = ['file_local' => __DIR__ . '/../example/c_moll_mini.cmap']);
 
   }
 

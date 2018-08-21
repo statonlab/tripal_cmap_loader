@@ -199,7 +199,7 @@ class CmapImporter extends TripalImporter {
       $map_name = $cols[1]; //name for map feature
       $map_start = $cols[2];
       $map_stop = $cols[3];
-      $marker_locus_acc = $cols[4];
+      $locus_acc = $cols[4];
       $feature_acc = $cols[5];
       $feature_name = $cols[6];
       $feature_aliases = $cols[7];
@@ -230,6 +230,8 @@ class CmapImporter extends TripalImporter {
 
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
       $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $marker_type_id, $organism_id);
+
+      //$locus_feature = $this->get_locus_feature($locus_acc, $marker_feature);
 
       //insert into featurepos
       if ($feature_start === $feature_stop) {
