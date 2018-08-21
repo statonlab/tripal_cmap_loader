@@ -1,0 +1,27 @@
+<?php
+
+
+/**
+ * Implements hook_install().
+ */
+function tripal_cmap_loader_install() {
+  tripal_cmap_loader_add_marker_locus_term();
+}
+
+
+function tripal_cmap_loader_add_marker_locus_term() {
+
+  tripal_insert_cvterm([
+    'id' => 'NCIT:C45822',
+    'name' => 'Locus',
+    'cv_name' => 'NCIT',
+    'definition' => 'The position of a gene or a chromosomal marker on a chromosome; also, a stretch of DNA at a particular place on a particular chromosome. The use of locus is sometimes restricted to mean regions of DNA that are expressed.',
+  ]);
+}
+
+/**
+ * Add the NCIT marker locus term
+ */
+function tripal_cmap_loader_update_7300() {
+  tripal_cmap_loader_add_marker_locus_term();
+}

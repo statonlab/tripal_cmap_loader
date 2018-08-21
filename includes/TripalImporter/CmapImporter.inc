@@ -192,20 +192,21 @@ class CmapImporter extends TripalImporter {
 
       // split the line into it's columns
       $cols = explode("\t", $line);
-      if (sizeof($cols) < 11) {
-        throw new Exception("Improper number of columns on line $line_num");
+      if (sizeof($cols) < 12) {
+        throw new Exception("Improper number of columns on line $line_num.\n  This module expects a 12 column file.");
       }
       $map_acc = $cols[0]; //the uniquename feature for the mapping ie chromosome
       $map_name = $cols[1]; //name for map feature
       $map_start = $cols[2];
       $map_stop = $cols[3];
-      $feature_acc = $cols[4];
-      $feature_name = $cols[5];
-      $feature_aliases = $cols[6];
-      $feature_start = $cols[7];
-      $feature_stop = $cols[8];
-      $feature_type_acc = $cols[9];
-      $is_landmark = $cols[10];
+      $marker_locus_acc = $cols[4];
+      $feature_acc = $cols[5];
+      $feature_name = $cols[6];
+      $feature_aliases = $cols[7];
+      $feature_start = $cols[8];
+      $feature_stop = $cols[9];
+      $feature_type_acc = $cols[10];
+      $is_landmark = $cols[11];
 
       if ($map_acc == 'map_acc') {
         //skip header
