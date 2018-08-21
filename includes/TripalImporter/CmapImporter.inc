@@ -190,6 +190,7 @@ class CmapImporter extends TripalImporter {
 
     foreach ($lines as $line_num => $line) {
 
+
       // split the line into it's columns
       $cols = explode("\t", $line);
       if (sizeof($cols) < 12) {
@@ -229,6 +230,8 @@ class CmapImporter extends TripalImporter {
       }
 
       $map_feature = $this->get_map_feature($map_acc, $map_name, $map_type_id, $organism_id);
+
+
       $marker_feature = $this->get_marker_feature($feature_acc, $feature_name, $feature_aliases, $marker_type_id, $organism_id);
 
       $locus_feature = $this->get_locus_feature($locus_acc, $marker_feature, $organism_id);
@@ -325,16 +328,21 @@ class CmapImporter extends TripalImporter {
 
     //TODO: we should deal with duplicate constraints.
 
-    $insert = db_insert('chado.featurepos');
-    $insert->fields([
+    $start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
+
+    $values = [
       'featuremap_id' => $featuremap_id,
       'feature_id' => $marker_feature,
       'map_feature_id' => $map_feature,
       'mappos' => $position,
-    ]);
+    ];
 
-    $outcome = $insert->execute();
-
+    $featurepos_record = chado_insert_record('featurepos', $values);
+    //add "start" prop
+    $record = ['table' => 'featurepos', 'id' => $featurepos_record];
+    $property = ['type_id' => $start_term, 'value' => $position];
+    $options = ['update_if_present' => TRUE];
+    chado_insert_property($record, $property, $options);
   }
 
   /**
@@ -350,8 +358,26 @@ class CmapImporter extends TripalImporter {
    */
   private function insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop) {
 
-    print ("not implemented yet");
+
+    $featurepos_record = $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature, $feature_start);
+
+    $start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
+    //add "start" prop
+    $record = ['table' => 'featurepos', 'id' => $featurepos_record];
+    $property = ['type_id' => $start_term, 'value' => $feature_start];
+    $options = ['update_if_present' => TRUE];
+    chado_insert_property($record, $property, $options);
+
+    //stop prop
+    $stop_term = chado_get_cvterm(['id' => 'SIO:000953'])->cvterm_id;
+    $record = ['table' => 'featurepos', 'id' => $featurepos_record];
+    $property = ['type_id' => $stop_term, 'value' => $feature_start];
+    $options = ['update_if_present' => TRUE];
+    chado_insert_property($record, $property, $options);
+
+    //TODO: QTL peak support goes here
   }
+
 
   /**
    * create keyed array of featuremaps in chado.
@@ -418,6 +444,19 @@ class CmapImporter extends TripalImporter {
     $locus_id = $query->execute()->fetchField();
 
     if ($locus_id) {
+
+      $query = db_select('chado.feature_relationship', 'FR');
+        $query->fields('FR', ['feature_relationship_id']);
+      $query->condition('subject_id', $locus_id)
+        ->condition('object_id', $marker_feature)
+        ->condition('type_id', $relationship_type_id);
+      $relationship = $query->execute()
+        ->fetchField();
+
+      if ($relationship) {
+        return $locus_id;
+      }
+
       //add the relationship before returning
       $insert = db_insert('chado.feature_relationship');
       $insert->fields([
@@ -426,7 +465,6 @@ class CmapImporter extends TripalImporter {
         'type_id' => $relationship_type_id,
       ]);
       $insert->execute();
-
     }
 
     //if it doesn't exist insert and return it

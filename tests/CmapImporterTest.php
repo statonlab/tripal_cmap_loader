@@ -17,8 +17,8 @@ class CmapImporterTest extends TripalTestCase {
 
   use DBTransaction;
 
-  /*
-   * Tests the form itself.  This means making sure select options populate etc...
+  /**
+   * @group pass
    */
   public function testImporterForm() {
     $importer = new  \CmapImporter;
@@ -42,6 +42,10 @@ class CmapImporterTest extends TripalTestCase {
   }
 
 
+  /**
+   * @throws \Exception
+   * @group pass
+   */
   public function testImporterCreatesLocusFeature() {
 
     ob_start();
@@ -65,6 +69,7 @@ class CmapImporterTest extends TripalTestCase {
 
   /**
    * @group form
+   * @group pass
    */
   public function testImporterFormValidator() {
     $importer = new  \CmapImporter;
@@ -96,6 +101,7 @@ class CmapImporterTest extends TripalTestCase {
    * Test that the map features (chromosomes) are created
    *
    * @dataProvider chromosome_name_uname_provider
+   * @group pass
    */
   public function testImporterCreatesChromosomeFeatures($name, $uname) {
     ob_start();
@@ -115,10 +121,8 @@ class CmapImporterTest extends TripalTestCase {
     $query->fields('CF', ['name', 'uniquename']);
     $query->condition('CF.uniquename', $uname);
     $result = $query->execute()->fetchObject();
-
     $this->assertEquals($name, $result->name);
     $this->assertEquals($uname, $result->uniquename);
-
   }
 
   /**
@@ -127,7 +131,6 @@ class CmapImporterTest extends TripalTestCase {
    * @param $name
    * @param $uname
    *
-   * @group failing
    * @throws \Exception
    * @dataProvider chromosome_name_uname_provider
    */
@@ -149,15 +152,14 @@ class CmapImporterTest extends TripalTestCase {
       'type_id' => $type->cvterm_id,
     ]);
 
-    ob_start();
     $importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id, $organism->organism_id);
-    ob_end_clean();
 
     //Was everything loaded even though this feature existed?
 
     $query = db_select('chado.feature', 'CF');
     $query->fields('CF', ['name', 'uniquename', 'type_id', 'residues']);
     $query->condition('CF.name', $name);
+    $query->condition('CF.type_id', $type->cvterm_id);
     $result = $query->execute()->fetchObject();
 
     $this->assertEquals($name, $result->name);
@@ -172,14 +174,12 @@ class CmapImporterTest extends TripalTestCase {
    * @param $type_name
    * @param $mapping_feature
    *
-   * @group failing
    * @dataProvider marker_provider
    */
   public function testImporterCreatesMarkers($name, $uname, $start, $type_name, $mapping_feature) {
     ob_start();
     $this->run_importer();
     ob_end_clean();
-
     $marker_type_id = chado_get_cvterm([
       'cv_id' => [
         'name' => 'sequence',
@@ -193,7 +193,7 @@ class CmapImporterTest extends TripalTestCase {
     $query->join('chado.cvterm', 'CV', 'CF.type_id = CV.cvterm_id');
     $query->fields('CV', ['name']);
     $query->condition('CF.uniquename', $uname);
-    $query->condition('CV.cvterm_id', $marker_type_id);
+    $query->condition('CV.cvterm_id', $marker_type_id->cvterm_id);
     $result = $query->execute()->fetchObject();
     $this->assertEquals($name, $result->name);
     $this->assertEquals($uname, $result->uniquename);
@@ -209,7 +209,6 @@ class CmapImporterTest extends TripalTestCase {
    * @param $mapping_feature
    *
    * @dataProvider marker_provider
-   * @group failing
    * @group featurepos
    */
   public function testImporterPopulatesFeaturePos($name, $uname, $start, $type_name, $mapping_feature) {
@@ -234,9 +233,44 @@ class CmapImporterTest extends TripalTestCase {
     $this->assertEquals($mapping_feature, $result->name);
   }
 
+  /**
+   * @param $name
+   * @param $uname
+   * @param $start
+   * @param $type_name
+   * @param $mapping_feature
+   * @group featurepos
+   * @dataProvider marker_provider
+   */
+  public function testImporterAddsPropsForFeaturepos($name, $uname, $start, $type_name, $mapping_feature) {
+
+    ob_start();
+    $this->run_importer();
+
+    ob_end_clean();
+    
+       $marker_type_id = chado_get_cvterm([
+         'cv_id' => [
+           'name' => 'sequence',
+         ],
+         'name' => $type_name,
+       ]);
+
+    //was featureposprop loaded?
+    $query = db_select('chado.featurepos', 'CFP');
+    $query->join('chado.feature', 'CF', 'CF.feature_id = CFP.feature_id');
+    $query->join('chado.featureposprop', 'FPP', 'CFP.featurepos_id = FPP.featurepos_id');
+    $query->fields('FPP', ['value']);
+    $query->condition('CF.uniquename', $uname);
+    $query->condition('CF.type_id', $marker_type_id->cvterm_id);
+    $value = $query->execute()->fetchField();
+    $this->assertNotNull($value);
+    $this->assertEquals($start, $value);
+
+  }
+
   public function marker_provider() {
     return [
-
       ['CmSNP00665', 'CmSNP00665', '50.4', 'SNP', 'L'],
       ['CmSI0928', 'CmSI0928', '44.8', 'microsatellite', 'L'],
       ['CmSI0407', 'CmSI0407', '7.5', 'microsatellite', 'A'],
