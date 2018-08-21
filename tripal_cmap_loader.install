@@ -6,6 +6,8 @@
  */
 function tripal_cmap_loader_install() {
   tripal_cmap_loader_add_marker_locus_term();
+  tripal_cmap_loader_add_prop_terms();
+
 }
 
 
@@ -32,8 +34,40 @@ function tripal_cmap_loader_add_marker_locus_term() {
 }
 
 /**
+ * Add terms needed for featureposprop (start, end, peak...)
+ */
+function tripal_cmap_loader_add_prop_terms() {
+
+  tripal_insert_cvterm([
+    'id' => 'SIO:000943',
+    'name' => 'start position',
+    'cv_name' => 'SIO',
+    'definition' => 'A start position is the proximal position of an object relative to an origin in a linear system.',
+  ]);
+  tripal_insert_cvterm([
+    'id' => 'SIO:000953',
+    'name' => 'stop position',
+    'cv_name' => 'SIO',
+    'definition' => 'An end position is the distal position of an object relative to an origin in a linear system.',
+  ]);
+
+  tripal_insert_cvterm([
+    'id' => 'NCIT:C48054',
+    'name' => 'Peak',
+    'cv_name' => 'NCIT',
+    'definition' => 'The most extreme possible amount or value; the highest point.',
+  ]);
+
+}
+
+/**
  * Add the NCIT marker locus term
  */
 function tripal_cmap_loader_update_7300() {
   tripal_cmap_loader_add_marker_locus_term();
+}
+
+
+function tripal_cmap_loader_update_7301() {
+  tripal_cmap_loader_add_prop_terms();
 }
