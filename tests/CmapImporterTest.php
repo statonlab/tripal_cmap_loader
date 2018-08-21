@@ -180,12 +180,20 @@ class CmapImporterTest extends TripalTestCase {
     $this->run_importer();
     ob_end_clean();
 
+    $marker_type_id = chado_get_cvterm([
+      'cv_id' => [
+        'name' => 'sequence',
+      ],
+      'name' => $type_name,
+    ]);
+
     //were features loaded?
     $query = db_select('chado.feature', 'CF');
     $query->fields('CF', ['name', 'uniquename', 'type_id']);
     $query->join('chado.cvterm', 'CV', 'CF.type_id = CV.cvterm_id');
     $query->fields('CV', ['name']);
     $query->condition('CF.uniquename', $uname);
+    $query->condition('CV.cvterm_id', $marker_type_id);
     $result = $query->execute()->fetchObject();
     $this->assertEquals($name, $result->name);
     $this->assertEquals($uname, $result->uniquename);
