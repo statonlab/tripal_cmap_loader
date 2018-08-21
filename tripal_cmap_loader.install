@@ -20,6 +20,15 @@ function tripal_cmap_loader_add_marker_locus_term() {
 
   $values = ['name' => 'OBO_REL'];
   chado_insert_record('db', $values);
+
+  tripal_insert_cvterm([
+    'id' => 'OBO_REL:instance_of',
+    'name' => 'instance_of',
+    'cv_name' => 'OBO_REL',
+    'definition' => '',
+  ]);
+
+
 }
 
 /**
