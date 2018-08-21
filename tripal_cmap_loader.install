@@ -17,6 +17,9 @@ function tripal_cmap_loader_add_marker_locus_term() {
     'cv_name' => 'NCIT',
     'definition' => 'The position of a gene or a chromosomal marker on a chromosome; also, a stretch of DNA at a particular place on a particular chromosome. The use of locus is sometimes restricted to mean regions of DNA that are expressed.',
   ]);
+
+  $values = ['name' => 'OBO_REL'];
+  chado_insert_record('db', $values);
 }
 
 /**
