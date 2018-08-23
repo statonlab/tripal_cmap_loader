@@ -54,7 +54,8 @@ class CmapImporterTest extends TripalTestCase {
 
     $name = 'CmSNP00329';
 
-    $term = chado_get_cvterm(['id' => 'NCIT:C45822']);
+    //the term for marker locus is biological_region
+    $term = chado_get_cvterm(['id' => 'SO:0001411']);
 
     //were features from beginning and end of file loaded?
     $query = db_select('chado.feature', 'CF');
