@@ -430,8 +430,16 @@ class CmapImporter extends TripalImporter {
     return $type_id;
   }
 
+  /**
+   * Adds a parent marker locus feature.  This feature uses the SO term biological_region.
+   * @param $locus_acc
+   * @param $marker_feature
+   * @param $organism_id
+   *
+   * @return mixed
+   */
   private function get_locus_feature($locus_acc, $marker_feature, $organism_id) {
-    $term = chado_get_cvterm(['id' => 'NCIT:C45822']);
+    $term = chado_get_cvterm(['id' => 'SO:0001411']);
     $locus_type_id = $term->cvterm_id;
     $term = chado_get_cvterm(['id' => 'OBO_REL:instance_of']);
     $relationship_type_id = $term->cvterm_id;
