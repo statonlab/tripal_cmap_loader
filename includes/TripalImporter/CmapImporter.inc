@@ -328,7 +328,9 @@ class CmapImporter extends TripalImporter {
 
     //TODO: we should deal with duplicate constraints.
 
-    $start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
+    //$start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
+
+    $pos_type_term = chado_get_cvterm(['id' => 'local:marker_position_type'])->cvterm_id;
 
     $values = [
       'featuremap_id' => $featuremap_id,
@@ -340,7 +342,7 @@ class CmapImporter extends TripalImporter {
     $featurepos_record = chado_insert_record('featurepos', $values);
     //add "start" prop
     $record = ['table' => 'featurepos', 'id' => $featurepos_record];
-    $property = ['type_id' => $start_term, 'value' => $position];
+    $property = ['type_id' => $pos_type_term, 'value' => 'start'];
     $options = ['update_if_present' => TRUE];
     chado_insert_property($record, $property, $options);
   }

@@ -53,6 +53,20 @@ function tripal_cmap_loader_add_prop_terms() {
     'definition' => 'The most extreme possible amount or value; the highest point.',
   ]);
 
+  tripal_insert_cvterm([
+    'id' => 'local:marker_position_type',
+    'name' => 'marker_position_type',
+    'cv_name' => 'local',
+    'definition' => 'The type of position this featurepos is associated with (start, stop, QTL).',
+  ]);
+
+  tripal_insert_cvterm([
+    'id' => 'local:featuremap_type',
+    'name' => 'featuremap_type',
+    'cv_name' => 'local',
+    'definition' => 'The type of feature map.  IE Genetic, Physical.',
+  ]);
+
 }
 
 /**
@@ -64,5 +78,12 @@ function tripal_cmap_loader_update_7300() {
 
 
 function tripal_cmap_loader_update_7301() {
+  tripal_cmap_loader_add_prop_terms();
+}
+
+/**
+ * add local prop term for type
+ */
+function tripal_cmap_loader_update_7302() {
   tripal_cmap_loader_add_prop_terms();
 }
