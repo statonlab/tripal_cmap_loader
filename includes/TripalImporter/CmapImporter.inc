@@ -126,6 +126,20 @@ class CmapImporter extends TripalImporter {
     if ($form_state['values']['featuremap_id'] === 0) {
       form_set_error('featuremap_id', t('please select a featurmap (map).  If a featuremap does not exist, you must create one.'));
     };
+
+    $featuremap_id = $form_state['values']['featuremap_id'];
+
+    $record = ['table' => 'featuremap', 'id' => $featuremap_id];
+
+    $property  = ['cv_name' => 'local', 'type_name' => 'featuremap_type'];
+
+    $typeprop = chado_get_property($record, $property);
+
+    if (!$typeprop){
+      form_set_error('featuremap_id', t('The featuremap you selected does not have the featuremap_type property set and will cause problems with the TripalMap module.  Please set the property.  See the README for more help'));
+
+    }
+
     if ($form_state['values']['organism_id'] === 0) {
       form_set_error('organism_id', t('please select an organism.'));
     };
@@ -328,7 +342,9 @@ class CmapImporter extends TripalImporter {
 
     //TODO: we should deal with duplicate constraints.
 
-    $start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
+    //$start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
+
+    $pos_type_term = chado_get_cvterm(['id' => 'local:marker_position_type'])->cvterm_id;
 
     $values = [
       'featuremap_id' => $featuremap_id,
@@ -340,7 +356,7 @@ class CmapImporter extends TripalImporter {
     $featurepos_record = chado_insert_record('featurepos', $values);
     //add "start" prop
     $record = ['table' => 'featurepos', 'id' => $featurepos_record];
-    $property = ['type_id' => $start_term, 'value' => $position];
+    $property = ['type_id' => $pos_type_term, 'value' => 'start'];
     $options = ['update_if_present' => TRUE];
     chado_insert_property($record, $property, $options);
   }

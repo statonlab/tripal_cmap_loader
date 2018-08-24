@@ -240,6 +240,7 @@ class CmapImporterTest extends TripalTestCase {
    * @param $start
    * @param $type_name
    * @param $mapping_feature
+   *
    * @group featurepos
    * @dataProvider marker_provider
    */
@@ -249,24 +250,32 @@ class CmapImporterTest extends TripalTestCase {
     $this->run_importer();
 
     ob_end_clean();
-    
-       $marker_type_id = chado_get_cvterm([
-         'cv_id' => [
-           'name' => 'sequence',
-         ],
-         'name' => $type_name,
-       ]);
+
+    $marker_type_id = chado_get_cvterm([
+      'cv_id' => [
+        'name' => 'sequence',
+      ],
+      'name' => $type_name,
+    ]);
+
+    $featurepospropterm = chado_get_cvterm([
+      'cv_id' => [
+        'name' => 'local',
+      ],
+      'name' => 'marker_position_type',
+    ]);
 
     //was featureposprop loaded?
     $query = db_select('chado.featurepos', 'CFP');
     $query->join('chado.feature', 'CF', 'CF.feature_id = CFP.feature_id');
     $query->join('chado.featureposprop', 'FPP', 'CFP.featurepos_id = FPP.featurepos_id');
     $query->fields('FPP', ['value']);
+    $query->condition('FPP.type_id', $featurepospropterm->cvterm_id);
     $query->condition('CF.uniquename', $uname);
     $query->condition('CF.type_id', $marker_type_id->cvterm_id);
     $value = $query->execute()->fetchField();
     $this->assertNotNull($value);
-    $this->assertEquals($start, $value);
+    $this->assertEquals('start', $value);
 
   }
 
