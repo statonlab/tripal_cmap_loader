@@ -126,6 +126,20 @@ class CmapImporter extends TripalImporter {
     if ($form_state['values']['featuremap_id'] === 0) {
       form_set_error('featuremap_id', t('please select a featurmap (map).  If a featuremap does not exist, you must create one.'));
     };
+
+    $featuremap_id = $form_state['values']['featuremap_id'];
+
+    $record = ['table' => 'featuremap', 'id' => $featuremap_id];
+
+    $property  = ['cv_name' => 'local', 'type_name' => 'featuremap_type'];
+
+    $typeprop = chado_get_property($record, $property);
+
+    if (!$typeprop){
+      form_set_error('featuremap_id', t('The featuremap you selected does not have the featuremap_type property set and will cause problems with the TripalMap module.  Please set the property.  See the README for more help'));
+
+    }
+
     if ($form_state['values']['organism_id'] === 0) {
       form_set_error('organism_id', t('please select an organism.'));
     };
