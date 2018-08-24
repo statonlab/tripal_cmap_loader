@@ -270,7 +270,7 @@ class CmapImporterTest extends TripalTestCase {
     $query->join('chado.feature', 'CF', 'CF.feature_id = CFP.feature_id');
     $query->join('chado.featureposprop', 'FPP', 'CFP.featurepos_id = FPP.featurepos_id');
     $query->fields('FPP', ['value']);
-    $query->cnodition('FPP.type_id', $featurepospropterm->cvterm_id);
+    $query->condition('FPP.type_id', $featurepospropterm->cvterm_id);
     $query->condition('CF.uniquename', $uname);
     $query->condition('CF.type_id', $marker_type_id->cvterm_id);
     $value = $query->execute()->fetchField();
