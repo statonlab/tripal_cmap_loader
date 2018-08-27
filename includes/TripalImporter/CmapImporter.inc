@@ -131,11 +131,11 @@ class CmapImporter extends TripalImporter {
 
     $record = ['table' => 'featuremap', 'id' => $featuremap_id];
 
-    $property  = ['cv_name' => 'local', 'type_name' => 'featuremap_type'];
+    $property = ['cv_name' => 'local', 'type_name' => 'featuremap_type'];
 
     $typeprop = chado_get_property($record, $property);
 
-    if (!$typeprop){
+    if (!$typeprop) {
       form_set_error('featuremap_id', t('The featuremap you selected does not have the featuremap_type property set and will cause problems with the TripalMap module.  Please set the property.  See the README for more help'));
 
     }
@@ -198,6 +198,8 @@ class CmapImporter extends TripalImporter {
 
     $lines = file($file, FILE_SKIP_EMPTY_LINES);
     $prev_map_feature = NULL;
+
+    $this->link_featuremap_organism($featuremap_id, $organism_id);
 
     $line_count = 0;
     $type_id_mapper = [];//Keep track of type IDs so we dont have to look up each time.
@@ -447,7 +449,9 @@ class CmapImporter extends TripalImporter {
   }
 
   /**
-   * Adds a parent marker locus feature.  This feature uses the SO term biological_region.
+   * Adds a parent marker locus feature.  This feature uses the SO term
+   * biological_region.
+   *
    * @param $locus_acc
    * @param $marker_feature
    * @param $organism_id
@@ -470,7 +474,7 @@ class CmapImporter extends TripalImporter {
     if ($locus_id) {
 
       $query = db_select('chado.feature_relationship', 'FR');
-        $query->fields('FR', ['feature_relationship_id']);
+      $query->fields('FR', ['feature_relationship_id']);
       $query->condition('subject_id', $locus_id)
         ->condition('object_id', $marker_feature)
         ->condition('type_id', $relationship_type_id);
@@ -513,6 +517,31 @@ class CmapImporter extends TripalImporter {
       $insert->execute();
     }
     return $locus_id;
+
+  }
+
+  /**
+   * Links the given featuremap and organism.
+   *
+   * @param $featuremap_id
+   * @param $organism_id
+   */
+  private function link_featuremap_organism($featuremap_id, $organism_id) {
+
+    $result = db_select('chado.featuremap_organism', 't')
+      ->fields('t', ['featuremap_organism_id'])
+      ->condition('t.featuremap_id', $featuremap_id)
+      ->condition('t.organism_id', $organism_id)
+      ->execute()->fetchField();
+
+    if (!$result) {
+
+      db_insert('chado.featuremap_organism')
+        ->fields([
+          'featuremap_id' => $featuremap_id,
+          'organism_id' => $organism_id,
+        ])->execute();
+    }
 
   }
 

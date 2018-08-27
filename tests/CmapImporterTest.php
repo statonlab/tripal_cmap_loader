@@ -279,6 +279,44 @@ class CmapImporterTest extends TripalTestCase {
 
   }
 
+
+
+  /**
+   * @param $name
+   * @param $uname
+   * @param $start
+   * @param $type_name
+   * @param $mapping_feature
+   *
+   * @group featurepos
+   * @ticket 34
+   */
+  public function test_importer_links_organism_feature(){
+
+
+    $importer = new  \CmapImporter;
+    $cv_id = $this->get_so_id();//should only allow SO terms...
+    $organism = factory('chado.organism')->create();
+    $analysis = factory('chado.analysis')->create();
+    $featuremap = factory('chado.featuremap')->create();
+    $type = factory('chado.cvterm')->create(['cv_id' => $cv_id]);
+    $file = __DIR__ . '/../example/c_moll_mini.cmap';
+
+    ob_start();
+
+    $importer->parse_cmap($analysis->analysis_id, $file, $featuremap->featuremap_id, $type->cvterm_id, $organism->organism_id);
+
+    ob_end_clean();
+
+
+    $query = db_select('chado.featuremap_organism', 'fo');
+    $query->fields('fo', ['organism_id']);
+    $query->condition('fo.featuremap_id', $featuremap->featuremap_id);
+    $value = $query->execute()->fetchField();
+    $this->assertNotNull($value);
+    $this->assertEquals($organism->organism_id, $value);
+  }
+
   public function marker_provider() {
     return [
       ['CmSNP00665', 'CmSNP00665', '50.4', 'SNP', 'L'],
