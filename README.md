@@ -22,7 +22,12 @@ In order for this module to be compatible with [TripalMap](https://gitlab.com/ks
 
 
 ## Expected CMAP data
-The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  This cmap file is a converted FPC file(see [here for code](https://github.com/statonlab/fpc_to_cmap_converter)).  The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
+
+
+The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  This example map is a [genetic map published here](https://link.springer.com/article/10.1007%2Fs11295-012-0576-6).
+
+
+The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
 currently we ignore the is_landmark and feature_aliases columns.
 
 
@@ -63,3 +68,8 @@ Note that the cmap format is not consistent, or at least we have not found a def
 | feature_stop           | featurepos record for stop                             |
 | feature_type_accession | type_id for marker feature                             |
 | is_landmark            | not used                                               |
+
+
+## FPC
+
+We have written a script to convert FPC format to cmap.  See [here for code](https://github.com/statonlab/fpc_to_cmap_converter)). 
