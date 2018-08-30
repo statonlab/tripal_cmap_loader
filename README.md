@@ -7,16 +7,37 @@
 This module currently provides a Tripal 3 importer for Cmap files that conforms to the [Chado map module](http://gmod.org/wiki/Chado_Map_Module) schematic.  We hope to use existing modules for display (ie [cmapjs by legume federation](https://github.com/LegumeFederation/cmap-js)).  A field utilizing cmap.js will be included in this module soon.
 
 
+## Installation and setup
+
+This module is not installable with drush.  Navigate to where your custom modules are installed and clone this repository.  For example:
+
+``` bash
+cd /var/www/html/sites/all/modules/custom/
+git clone https://github.com/statonlab/tripal_cmap_loader.git
+drush pm-enable tripal_cmap_loader -y
+```
+
+In order for this module to be compatible with [TripalMap](https://gitlab.com/ksbuble/TripalMap), you **must** add the `local:featuremap_type` Chado Property field to the map bundle.  To do this, go to `structure -> map -> fields` and add a **new Field** of type **Chado Property**.  Set the term to featuremap_type from the local vocabulary.  Mark the field as required.  You can set the property to whatever you like when creating the feature map (I suggest 'Genetic' or 'Physical').  If this property isn't set, **your map wont populate in the TripalMap mview**.
+
+
+
 ## Expected CMAP data
-The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  This cmap file is a converted FPC file(see [here for code](https://github.com/statonlab/fpc_to_cmap_converter)).  The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
+
+
+The below table shows an example CMAP file.  You can find full file in the example in  [the example folder](example/).  This example map is a [genetic map published here](https://link.springer.com/article/10.1007%2Fs11295-012-0576-6).
+
+
+The importer will load features in assuming that the *accession* is the *unique name* and the *name* is the *feature name*.
 currently we ignore the is_landmark and feature_aliases columns.
 
 
+
 | map_acc       | map_name | map_start | map_stop | locus_acc | feature_name | feature_accession | feature_aliases | feature_start | feature_stop | feature_type_acc | is_landmark |
-|---------------|----------|-----------|----------|--------------|-------------------|-----------------|---------------|--------------|------------------|-------------|
+|---------------|----------|-----------|----------|--------------|-------------------|-----------------|---------------|--------------|------------------|-------------|-----|
 | C_mollisima_A | A        | 0         | 90.4   | CmSI0385     | CmSI0385     | CmSI0385          |                 | 0             | 0            | SSR              | 0           |
 | C_mollisima_A | A        | 0         | 90.4  | CmSNP01340     | CmSNP01340   | CmSNP01340        |                 | 1.1           | 1.1          | SNP              | 0           |
 | C_mollisima_A | A        | 0         | 90.4   | CmSNP01086   | CmSNP01086   | CmSNP01086        |                 | 3.5           | 3.5          | SNP              | 0           |
+
 
 ## Using the importer
 Before loading the file, create a featuremap (Tripal 3 bundle: Map) entity record.
@@ -47,3 +68,8 @@ Note that the cmap format is not consistent, or at least we have not found a def
 | feature_stop           | featurepos record for stop                             |
 | feature_type_accession | type_id for marker feature                             |
 | is_landmark            | not used                                               |
+
+
+## FPC
+
+We have written a script to convert FPC format to cmap.  See [here for code](https://github.com/statonlab/fpc_to_cmap_converter)). 
