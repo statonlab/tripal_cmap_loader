@@ -19,6 +19,7 @@ drush pm-enable tripal_cmap_loader -y
 
 In order for this module to be compatible with [TripalMap](https://gitlab.com/ksbuble/TripalMap), you **must** add the `local:featuremap_type` Chado Property field to the map bundle.  To do this, go to `structure -> map -> fields` and add a **new Field** of type **Chado Property**.  Set the term to featuremap_type from the local vocabulary.  Mark the field as required.  You can set the property to whatever you like when creating the feature map (I suggest 'Genetic' or 'Physical').  If this property isn't set, **your map wont populate in the TripalMap mview**.
 
+If your featuremap has this property set, and you've populated the **tripal_map_genetic_markers_mview** materialized view (`Data Storage -> Chado -> Materialized Views`, press "populate"), your field should show up on the organism and featuremap!  You might need to clear the cache (`drush cc all`) before the field appears on the organism.
 
 
 ## Expected CMAP data
