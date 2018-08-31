@@ -73,10 +73,6 @@ class CmapImporter extends TripalImporter {
     ];
     $featuremap_options = $this->get_featuremap_options();
 
-    $featuremap_options[0] = '--Please Select--';
-
-    ksort($featuremap_options);
-
     $form['featuremap_id'] = [
       '#title' => t('Featuremap'),
       '#description' => t('Each map corresponds to a single featuremap in Chado.  Please create a featuremap for this file before using the loader.'),
@@ -404,7 +400,12 @@ $organism_options = chado_get_organism_select_options(FALSE);
     $out = [];
     $query = db_select('chado.featuremap', 'FM');
     $query->fields('FM', ['featuremap_id', 'name']);
+    $query->orderBy('name', 'ASC');
     $results = $query->execute()->fetchAll();
+
+    if ($results){
+      $out[0] = 'select a featuremap';
+    }
     foreach ($results as $result) {
       $out[$result->featuremap_id] = $result->name;
     }
