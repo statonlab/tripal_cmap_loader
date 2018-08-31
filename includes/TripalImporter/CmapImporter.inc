@@ -73,10 +73,6 @@ class CmapImporter extends TripalImporter {
     ];
     $featuremap_options = $this->get_featuremap_options();
 
-    $featuremap_options[0] = '--Please Select--';
-
-    ksort($featuremap_options);
-
     $form['featuremap_id'] = [
       '#title' => t('Featuremap'),
       '#description' => t('Each map corresponds to a single featuremap in Chado.  Please create a featuremap for this file before using the loader.'),
@@ -84,11 +80,8 @@ class CmapImporter extends TripalImporter {
       '#options' => $featuremap_options,
     ];
 
-    $organism_options = $this->get_organism_options();
 
-    $organism_options[0] = '--Please Select--';
-
-    ksort($organism_options);
+$organism_options = chado_get_organism_select_options(FALSE);
 
     $form['organism_id'] = [
       '#title' => t('Organism'),
@@ -407,29 +400,18 @@ class CmapImporter extends TripalImporter {
     $out = [];
     $query = db_select('chado.featuremap', 'FM');
     $query->fields('FM', ['featuremap_id', 'name']);
+    $query->orderBy('name', 'ASC');
     $results = $query->execute()->fetchAll();
+
+    if ($results){
+      $out[0] = 'select a featuremap';
+    }
     foreach ($results as $result) {
       $out[$result->featuremap_id] = $result->name;
     }
     return $out;
   }
 
-  /**
-   * Gets the organisms on the site in [organism_id => abbreviation].  For use
-   * with select box.
-   *
-   * @return array
-   */
-  private function get_organism_options() {
-    $out = [];
-    $query = db_select('chado.organism', 'O');
-    $query->fields('O', ['organism_id', 'abbreviation']);
-    $results = $query->execute()->fetchAll();
-    foreach ($results as $result) {
-      $out[$result->organism_id] = $result->abbreviation;
-    }
-    return $out;
-  }
 
   /**
    * Given text term name, get the sequence ontology cvterm_id.
