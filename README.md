@@ -16,11 +16,6 @@ git clone https://github.com/statonlab/tripal_cmap_loader.git
 drush pm-enable tripal_cmap_loader -y
 ```
 
-In order for this module to be compatible with [TripalMap](https://gitlab.com/ksbuble/TripalMap), you **must** add the `local:featuremap_type` Chado Property field to the map bundle.  To do this, go to `structure -> map -> fields` and add a **new Field** of type **Chado Property**.  Set the term to featuremap_type from the local vocabulary.  Mark the field as required.  You can set the property to whatever you like when creating the feature map (I suggest 'Genetic' or 'Physical').  If this property isn't set, **your map wont populate in the TripalMap mview**.
-
-If your featuremap has this property set, and you've populated the **tripal_map_genetic_markers_mview** materialized view (`Data Storage -> Chado -> Materialized Views`, press "populate"), your field should show up on the organism and featuremap!  You might need to clear the cache (`drush cc all`) before the field appears on the organism.
-
-
 ## Expected CMAP data
 
 
@@ -76,7 +71,10 @@ We have written a script to convert FPC format to cmap.  See [here for code](htt
 
 ## Using this module with tripal_map
 
-The below SQL code can and should replace the `tripal_map_genetic_markers_mview` mview.  Note we dont have SQL code to replace the `tripal_map_qtl_and_mtl_mview` mview because we don't have a QTL data model for this module.
+If you would look to use the [Tripal Map](https://gitlab.com/mainlabwsu/tripal_map) module to visualize data loaded with this module, you need to make two small adjustments:
+
+
+1. Replace the `tripal_map_genetic_markers_mview` mview.  Note we dont have SQL code to replace the `tripal_map_qtl_and_mtl_mview` mview because we don't have a QTL data model for this module.
 
 ```sql
 
@@ -112,5 +110,10 @@ SELECT F.uniquename as marker_locus_name, F.feature_id as marker_locus_id, F2.un
   INNER JOIN {organism} O 				ON FMO.organism_id = O.organism_id
   
   ```
+  
+  2.  Ensure that the featuremap bundle ( IE Genetic Map) has a chado property with the `local:featuremap_type` term.  I reccomend setting a default value for this property so you won't forget.
+  
+  
+If your featuremap has this property set, and you've populated the altered **tripal_map_genetic_markers_mview** materialized view (`Data Storage -> Chado -> Materialized Views`, press "populate"), your field should show up on the organism and featuremap!  You might need to clear the cache (`drush cc all`) before the field appears on the organism.
   
   
