@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/statonlab/tripal_cmap_loader.svg?branch=master)](https://travis-ci.org/statonlab/tripal_cmap_loader)
 
-**Status:** Not ready for production.
 
 ## Tripal Cmap
 
@@ -74,3 +73,44 @@ Note that the cmap format is not consistent, or at least we have not found a def
 ## FPC
 
 We have written a script to convert FPC format to cmap.  See [here for code](https://github.com/statonlab/fpc_to_cmap_converter)). 
+
+## Using this module with tripal_map
+
+The below SQL code can and should replace the `tripal_map_genetic_markers_mview` mview.  Note we dont have SQL code to replace the `tripal_map_qtl_and_mtl_mview` mview because we don't have a QTL data model for this module.
+
+```sql
+
+SELECT F.uniquename as marker_locus_name, F.feature_id as marker_locus_id, F2.uniquename as genetic_marker_name,
+  C1.name as map_unit_type, C2.name as marker_type, FM.name as map_name, FM.featuremap_id as map_id, FMP.value as map_type,
+  F3.name as linkage_group, F3.feature_id as linkage_group_id, FP.mappos as marker_pos, FPP.value as marker_pos_type,
+  O.organism_id as organism_id, O.genus as genus, O.species as species, O.common_name as common_name
+  FROM {feature} F
+  INNER JOIN {feature_relationship} FR 	ON FR.subject_id = F.feature_id AND
+    F.type_id = (SELECT cvterm_id  FROM {cvterm} WHERE name = 'biological_region' AND
+    cv_id = (SELECT cv_id FROM {cv} WHERE name = 'sequence'))
+     AND
+    FR.type_id = (SELECT cvterm_id  FROM {cvterm} WHERE {cvterm}.name = 'instance_of' AND
+    cv_id = (SELECT cv_id FROM {cv} WHERE name = 'OBO_REL'))
+
+  INNER JOIN {feature} F2               	ON FR.object_id = F2.feature_id 
+     AND
+    FR.type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = 'instance_of' AND
+    cv_id = (SELECT cv_id FROM {cv} WHERE name = 'OBO_REL'))
+    
+  INNER JOIN {featurepos} FP            	ON F2.feature_id = FP.feature_id
+  
+  INNER JOIN {featuremap} FM    		ON FM.featuremap_id = FP.featuremap_id
+  INNER JOIN {cvterm} C1                ON C1.cvterm_id = FM.unittype_id
+  	INNER JOIN {cvterm} C2 ON C2.cvterm_id = F2.type_id
+  INNER JOIN {featuremapprop} FMP       ON FMP.featuremap_id = FP.featuremap_id AND
+   FMP.type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = 'featuremap_type' AND
+   cv_id = (SELECT cv_id FROM {cv} WHERE name = 'local'))
+  INNER JOIN {featuremap_organism} FMO 	ON FMO.featuremap_id = FM.featuremap_id
+  INNER JOIN {feature} F3 				ON FP.map_feature_id = F3.feature_id
+  INNER JOIN {featureposprop} FPP 		ON FPP.featurepos_id = FP.featurepos_id
+  INNER JOIN {cvterm} C 				ON C.cvterm_id = FPP.type_id
+  INNER JOIN {organism} O 				ON FMO.organism_id = O.organism_id
+  
+  ```
+  
+  
