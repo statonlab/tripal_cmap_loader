@@ -199,7 +199,6 @@ $organism_options = chado_get_organism_select_options(FALSE);
 
     foreach ($lines as $line_num => $line) {
 
-
       // split the line into it's columns
       $cols = explode("\t", $line);
       if (sizeof($cols) < 12) {
@@ -249,9 +248,9 @@ $organism_options = chado_get_organism_select_options(FALSE);
       if ($feature_start === $feature_stop) {
         $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature, $feature_start);
       }
-      //insert into featurerange
+      //insert feature start and stop as properties
       if ($feature_start != $feature_stop) {
-        $this->insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop);
+        $this->insert_feature_start_stop($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop);
       }
       $line_count++;
     }
@@ -354,12 +353,12 @@ $organism_options = chado_get_organism_select_options(FALSE);
     $property = ['type_id' => $pos_type_term, 'value' => 'start'];
     $options = ['update_if_present' => TRUE];
     chado_insert_property($record, $property, $options);
+
+    return $featurepos_record;
   }
 
   /**
-   * Inserts into featurerange.  Cmap files will only have a range with a
-   * discrete start/stop.  The featurerange table can support start/stop ranges
-   * but cmap does not.
+   * Inserts the start and stop as properties (doesnt use chado.featurerange).
    *
    * @param $featuremap_id
    * @param $marker_feature
@@ -367,7 +366,7 @@ $organism_options = chado_get_organism_select_options(FALSE);
    * @param $feature_start
    * @param $feature_stop
    */
-  private function insert_featurerange($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop) {
+  private function insert_feature_start_stop($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop) {
 
 
     $featurepos_record = $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature, $feature_start);
@@ -381,9 +380,7 @@ $organism_options = chado_get_organism_select_options(FALSE);
 
     //stop prop
     $stop_term = chado_get_cvterm(['id' => 'SIO:000953'])->cvterm_id;
-    $record = ['table' => 'featurepos', 'id' => $featurepos_record];
-    $property = ['type_id' => $stop_term, 'value' => $feature_start];
-    $options = ['update_if_present' => TRUE];
+    $property = ['type_id' => $stop_term, 'value' => $feature_stop];
     chado_insert_property($record, $property, $options);
 
     //TODO: QTL peak support goes here
