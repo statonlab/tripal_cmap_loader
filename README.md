@@ -29,7 +29,7 @@ currently we ignore the is_landmark and feature_aliases columns.
 
 | map_acc       | map_name | map_start | map_stop | locus_acc | feature_name | feature_accession | feature_aliases | feature_start | feature_stop | feature_type_acc | is_landmark |
 |---------------|----------|-----------|----------|--------------|-------------------|-----------------|---------------|--------------|------------------|-------------|-----|
-| C_mollisima_A | A        | 0         | 90.4   | CmSI0385     | CmSI0385     | CmSI0385          |                 | 0             | 0            | SSR              | 0           |
+| C_mollisima_A | A        | 0         | 90.4   | CmSI0385     | CmSI0385     | CmSI0385          |                 | 0             | 0            | microsatellite              | 0           |
 | C_mollisima_A | A        | 0         | 90.4  | CmSNP01340     | CmSNP01340   | CmSNP01340        |                 | 1.1           | 1.1          | SNP              | 0           |
 | C_mollisima_A | A        | 0         | 90.4   | CmSNP01086   | CmSNP01086   | CmSNP01086        |                 | 3.5           | 3.5          | SNP              | 0           |
 
