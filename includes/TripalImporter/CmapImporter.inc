@@ -129,8 +129,26 @@ $organism_options = chado_get_organism_select_options(FALSE);
     $typeprop = chado_get_property($record, $property);
 
     if (!$typeprop) {
-      form_set_error('featuremap_id', t('The featuremap you selected does not have the featuremap_type property set and will cause problems with the TripalMap module.  Please set the property.  See the README for more help'));
 
+      //  Set the property to be what the bundle set via rdfs:type.
+
+      $term = chado_get_cvterm(['id' => 'rdfs:type']);
+      $property = ['type_id' => $term->cvterm_id];
+      $bundle_type_prop = chado_get_property($record, $property);
+
+      if (!$bundle_type_prop) {
+
+        form_set_error('featuremap_id', t('The featuremap you selected does not have the featuremap_type property set and will cause problems with the TripalMap module.  We could not auto-set the property based on the bundle.  Please set the property.  See the README for more help.'));
+      }
+      else {
+        $value = [
+          'cv_name' => 'local',
+          'type_name' => 'featuremap_type',
+          'value' => $bundle_type_prop->value
+        ];
+
+        chado_insert_property($record, $value);
+      }
     }
 
     if ($form_state['values']['organism_id'] === 0) {
