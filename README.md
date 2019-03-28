@@ -111,7 +111,7 @@ SELECT F.uniquename as marker_locus_name, F.feature_id as marker_locus_id, F2.un
   
   ```
   
-  2.  Ensure that the featuremap bundle ( IE Genetic Map) has a chado property with the `local:featuremap_type` term.  I reccomend setting a default value for this property so you won't forget.
+  2.  Ensure that the featuremap bundle ( IE Genetic Map) has a chado property with the `local:featuremap_type` term.  I reccommend setting a default value for this property so you won't forget.  **Note** you should only need to set this property yourself if the Tripal Entity you are using was custom created and has no type.
   
   
 If your featuremap has this property set, and you've populated the altered **tripal_map_genetic_markers_mview** materialized view (`Data Storage -> Chado -> Materialized Views`, press "populate"), your field should show up on the organism and featuremap!  You might need to clear the cache (`drush cc all`) before the field appears on the organism.
