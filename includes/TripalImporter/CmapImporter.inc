@@ -19,7 +19,7 @@ class CmapImporter extends TripalImporter {
    * presented to the site user.
    */
   public static $description = '<p>This importer will import a cmap file into Chado.  A cmap formatted map is a TSV seperated spreadhseet with 11 columns.</p>
-    <p>This importer follows the Chado featuremap module.  Each Map is a single entry in featuremap. Each featuremap consists of many marker features (SSRs, QTL regions, known sequences) mapped onto another feature (A chromosome, linkage group, contig...).</p>
+    <p>This importer follows the Chado featuremap module.  Each Map is a single entry in featuremap. Each featuremap consists of many marker features (SSRs, QTL regions, known sequences) mapped onto another feature (A chromosome, linkage_group, contig...).</p>
 ';
 
   /**
