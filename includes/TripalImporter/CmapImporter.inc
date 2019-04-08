@@ -81,7 +81,7 @@ class CmapImporter extends TripalImporter {
     ];
 
 
-$organism_options = chado_get_organism_select_options(FALSE);
+    $organism_options = chado_get_organism_select_options(FALSE);
 
     $form['organism_id'] = [
       '#title' => t('Organism'),
@@ -144,7 +144,7 @@ $organism_options = chado_get_organism_select_options(FALSE);
         $value = [
           'cv_name' => 'local',
           'type_name' => 'featuremap_type',
-          'value' => $bundle_type_prop->value
+          'value' => $bundle_type_prop->value,
         ];
 
         chado_insert_property($record, $value);
@@ -351,13 +351,6 @@ $organism_options = chado_get_organism_select_options(FALSE);
    * @param $position
    */
   private function insert_featurepos($featuremap_id, $marker_feature, $map_feature, $position) {
-
-    //TODO: we should deal with duplicate constraints.
-
-    //$start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
-
-    $pos_type_term = chado_get_cvterm(['id' => 'local:marker_position_type'])->cvterm_id;
-
     $values = [
       'featuremap_id' => $featuremap_id,
       'feature_id' => $marker_feature,
@@ -366,11 +359,6 @@ $organism_options = chado_get_organism_select_options(FALSE);
     ];
 
     $featurepos_record = chado_insert_record('featurepos', $values);
-    //add "start" prop
-    $record = ['table' => 'featurepos', 'id' => $featurepos_record];
-    $property = ['type_id' => $pos_type_term, 'value' => 'start'];
-    $options = ['update_if_present' => TRUE];
-    chado_insert_property($record, $property, $options);
 
     return $featurepos_record;
   }
@@ -386,7 +374,6 @@ $organism_options = chado_get_organism_select_options(FALSE);
    */
   private function insert_feature_start_stop($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop) {
 
-
     $featurepos_record = $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature, $feature_start);
 
     $start_term = chado_get_cvterm(['id' => 'SIO:000943'])->cvterm_id;
@@ -400,8 +387,6 @@ $organism_options = chado_get_organism_select_options(FALSE);
     $stop_term = chado_get_cvterm(['id' => 'SIO:000953'])->cvterm_id;
     $property = ['type_id' => $stop_term, 'value' => $feature_stop];
     chado_insert_property($record, $property, $options);
-
-    //TODO: QTL peak support goes here
   }
 
 
@@ -418,7 +403,7 @@ $organism_options = chado_get_organism_select_options(FALSE);
     $query->orderBy('name', 'ASC');
     $results = $query->execute()->fetchAll();
 
-    if ($results){
+    if ($results) {
       $out[0] = 'select a featuremap';
     }
     foreach ($results as $result) {
