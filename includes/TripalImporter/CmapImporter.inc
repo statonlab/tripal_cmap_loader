@@ -266,10 +266,8 @@ class CmapImporter extends TripalImporter {
       if ($feature_start === $feature_stop) {
         $this->insert_featurepos($featuremap_id, $marker_feature, $map_feature, $feature_start);
       }
-      //insert feature start and stop as properties
-      if ($feature_start != $feature_stop) {
+      //insert feature start (and stop if applicable) as properties
         $this->insert_feature_start_stop($featuremap_id, $marker_feature, $map_feature, $feature_start, $feature_stop);
-      }
       $line_count++;
     }
   }
@@ -383,10 +381,12 @@ class CmapImporter extends TripalImporter {
     $options = ['update_if_present' => TRUE];
     chado_insert_property($record, $property, $options);
 
-    //stop prop
-    $stop_term = chado_get_cvterm(['id' => 'SIO:000953'])->cvterm_id;
-    $property = ['type_id' => $stop_term, 'value' => $feature_stop];
-    chado_insert_property($record, $property, $options);
+    if ($feature_start != $feature_stop) {
+      //stop prop
+      $stop_term = chado_get_cvterm(['id' => 'SIO:000953'])->cvterm_id;
+      $property = ['type_id' => $stop_term, 'value' => $feature_stop];
+      chado_insert_property($record, $property, $options);
+    }
   }
 
 
