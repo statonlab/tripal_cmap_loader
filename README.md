@@ -74,7 +74,7 @@ We have written a script to convert FPC format to cmap.  See [here for code](htt
 If you would look to use the [Tripal Map](https://gitlab.com/mainlabwsu/tripal_map) module to visualize data loaded with this module, you need to make two small adjustments:
 
 
-1. Replace the `tripal_map_genetic_markers_mview` mview.  Note we dont have SQL code to replace the `tripal_map_qtl_and_mtl_mview` mview because we don't have a QTL data model for this module.
+1. Replace the `tripal_map_genetic_markers_mview` mview.  
 
 ```sql
 
@@ -111,7 +111,54 @@ SELECT F.uniquename as marker_locus_name, F.feature_id as marker_locus_id, F2.un
   
   ```
   
-  2.  Ensure that the featuremap bundle ( IE Genetic Map) has a chado property with the `local:featuremap_type` term.  I reccommend setting a default value for this property so you won't forget.  **Note** you should only need to set this property yourself if the Tripal Entity you are using was custom created and has no type.
+  
+  2.  Replace the `tripal_map_qtl_and_mtl_mview` mview
+  
+  
+  ```sql
+SELECT FM.name as map_name,
+ FM.featuremap_id as map_id,
+   FMP.value as map_type,
+    F3.name as linkage_group,
+ F3.feature_id as linkage_group_id,
+ F.uniquename as marker_locus_name,
+ C1.name as map_unit_type,
+  C2.name as marker_type,
+ FPP.value as marker_pos_type,
+  FP.mappos as marker_pos,
+O.organism_id as organism_id, O.genus as genus, O.species as species, O.common_name as common_name,
+F.feature_id as feature_id, FPP.featurepos_id as featurepos_id
+ FROM {feature} F
+--F is the biological_region or parent marker locus
+ INNER JOIN {feature_relationship} FR 	ON FR.subject_id = F.feature_id AND
+   F.type_id = (SELECT cvterm_id  FROM {cvterm} WHERE name = 'biological_region' AND
+   cv_id = (SELECT cv_id FROM cv WHERE name = 'sequence'))
+    AND
+   FR.type_id = (SELECT cvterm_id  FROM {cvterm} WHERE cvterm.name = 'instance_of' AND
+   cv_id = (SELECT cv_id FROM cv WHERE name = 'OBO_REL'))
+  
+-- F2 is the marker feature itself
+ INNER JOIN {feature} F2               	ON FR.object_id = F2.feature_id
+-- This mview is just for QTLs
+INNER JOIN {cvterm} C ON F2.type_id = C.cvterm_id AND (C.name = 'QTL' OR C.name = 'heritable_phenotypic_marker')
+ INNER JOIN {featurepos} FP            	ON F2.feature_id = FP.feature_id
+ INNER JOIN {featuremap} FM    		ON FM.featuremap_id = FP.featuremap_id
+ INNER JOIN {cvterm} C1                ON C1.cvterm_id = FM.unittype_id
+ -- C2 is the marker type term
+   INNER JOIN {cvterm} C2 ON C2.cvterm_id = F2.type_id
+ INNER JOIN {featuremapprop} FMP       ON FMP.featuremap_id = FP.featuremap_id AND
+  FMP.type_id = (SELECT cvterm_id FROM cvterm WHERE name = 'featuremap_type' AND
+  cv_id = (SELECT cv_id FROM cv WHERE name = 'local'))
+ INNER JOIN {featuremap_organism} FMO 	ON FMO.featuremap_id = FM.featuremap_id
+ --F3 is the parent feature of the map ie the linkage group
+ INNER JOIN {feature} F3 				ON FP.map_feature_id = F3.feature_id
+ INNER JOIN {featureposprop} FPP 		ON FPP.featurepos_id = FP.featurepos_id
+ INNER JOIN {organism} O 				ON FMO.organism_id = O.organism_id
+
+
+```
+  
+  3.  Ensure that the featuremap bundle ( IE Genetic Map) has a chado property with the `local:featuremap_type` term.  I reccommend setting a default value for this property so you won't forget.  **Note** you should only need to set this property yourself if the Tripal Entity you are using was custom created and has no type.
   
   
 If your featuremap has this property set, and you've populated the altered **tripal_map_genetic_markers_mview** materialized view (`Data Storage -> Chado -> Materialized Views`, press "populate"), your field should show up on the organism and featuremap!  You might need to clear the cache (`drush cc all`) before the field appears on the organism.
